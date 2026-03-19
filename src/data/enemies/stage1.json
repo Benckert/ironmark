@@ -16,7 +16,7 @@
   {
     "id": "enemy_forest_spider",
     "name": "Forest Spider",
-    "hp": 5,
+    "hp": 6,
     "attack": 2,
     "tier": 1,
     "intents": [
@@ -183,8 +183,8 @@
   {
     "id": "enemy_shadow_assassin",
     "name": "Shadow Assassin",
-    "hp": 16,
-    "attack": 7,
+    "hp": 20,
+    "attack": 6,
     "tier": 3,
     "intents": [
       { "type": "attack", "value": 7, "description": "Backstab for 7 damage" },

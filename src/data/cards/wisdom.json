@@ -158,7 +158,7 @@
     "faction": "wisdom",
     "rarity": "uncommon",
     "cost": 3,
-    "effect": { "type": "damage", "value": 2 },
+    "effect": { "type": "damage", "value": 3 },
     "targetType": "all_enemies",
     "keywords": [],
     "flavorText": "It leaps from foe to foe, hungry and bright.",

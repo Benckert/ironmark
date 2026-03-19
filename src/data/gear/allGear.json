@@ -8,7 +8,7 @@
     "cost": 1,
     "keywords": [],
     "upside": { "description": "+1 Attack to all allies", "type": "buff_ally_attack", "value": 1, "trigger": "passive" },
-    "downside": { "description": "Hero takes +1 damage from spells", "type": "increase_spell_damage_taken", "value": 1, "trigger": "passive" },
+    "downside": { "description": "Hero takes +1 damage from all sources", "type": "increase_damage_taken", "value": 1, "trigger": "passive" },
     "flavorText": "Forged in a furnace that never cools.",
     "artId": "art_iron_gauntlets",
     "upgraded": false,

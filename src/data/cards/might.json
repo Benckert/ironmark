@@ -206,7 +206,7 @@
     "faction": "might",
     "rarity": "uncommon",
     "cost": 2,
-    "effect": { "type": "buff_attack", "value": 3 },
+    "effect": { "type": "buff_attack", "value": 2 },
     "targetType": "single_ally",
     "keywords": [],
     "flavorText": "The taste of iron sharpens every sense.",
