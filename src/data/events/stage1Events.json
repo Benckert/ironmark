@@ -1,0 +1,145 @@
+[
+  {
+    "id": "event_abandoned_shrine",
+    "name": "The Abandoned Shrine",
+    "narrative": "You stumble upon a crumbling shrine half-buried in moss. The stone altar still hums with faint energy. Offerings of bone and wildflower line the base. Whatever god once dwelt here, some trace of power remains.",
+    "choices": [
+      {
+        "label": "Pray",
+        "description": "Kneel before the altar and offer a moment of reverence.",
+        "outcome": {
+          "description": "The shrine's warmth suffuses you. You feel restored.",
+          "effects": [{ "type": "heal", "value": 8 }]
+        }
+      },
+      {
+        "label": "Desecrate",
+        "description": "Smash the altar and take whatever valuables remain.",
+        "outcome": {
+          "description": "Gold spills from the cracked stone — but a dark whisper follows you.",
+          "effects": [
+            { "type": "gold", "value": 30 },
+            { "type": "add_curse" }
+          ]
+        }
+      }
+    ],
+    "artId": "art_abandoned_shrine"
+  },
+  {
+    "id": "event_wandering_merchant",
+    "name": "The Wandering Merchant",
+    "narrative": "A cloaked figure emerges from the shadows, cart laden with curious wares. \"Trade, friend? Or perhaps you prefer... a different kind of acquisition?\" His smile doesn't reach his eyes.",
+    "choices": [
+      {
+        "label": "Trade",
+        "description": "Pay 20 gold for a random Uncommon card.",
+        "outcome": {
+          "description": "A fair exchange. You pocket a promising card.",
+          "effects": [
+            { "type": "gold", "value": -20 },
+            { "type": "add_card", "cardRarity": "uncommon" }
+          ]
+        }
+      },
+      {
+        "label": "Rob",
+        "description": "Take everything. There will be consequences.",
+        "outcome": {
+          "description": "You seize the merchant's gold, but his cry echoes through the dungeon. Something heard it.",
+          "effects": [
+            { "type": "gold", "value": 40 },
+            { "type": "extra_enemy" }
+          ]
+        }
+      }
+    ],
+    "artId": "art_wandering_merchant"
+  },
+  {
+    "id": "event_cursed_chest",
+    "name": "The Cursed Chest",
+    "narrative": "An ornate chest sits alone in the center of the room, wreathed in a faint violet glow. Ancient warnings are scratched into the stone around it. The lock is already broken.",
+    "choices": [
+      {
+        "label": "Open it",
+        "description": "Claim the rare gear inside. The curse will cost you.",
+        "outcome": {
+          "description": "Power surges through you — but something vital drains away.",
+          "effects": [
+            { "type": "add_gear", "cardRarity": "rare" },
+            { "type": "max_hp", "value": -3 }
+          ]
+        }
+      },
+      {
+        "label": "Walk away",
+        "description": "Leave the chest untouched. Better safe than sorry.",
+        "outcome": {
+          "description": "You leave the room. Some doors are best left closed.",
+          "effects": []
+        }
+      }
+    ],
+    "artId": "art_cursed_chest"
+  },
+  {
+    "id": "event_wounded_soldier",
+    "name": "The Wounded Soldier",
+    "narrative": "A soldier lies against a broken pillar, clutching a wound that still seeps. Her armor bears a sigil you don't recognize. \"Help me,\" she whispers. \"I can fight for you... if I survive.\"",
+    "choices": [
+      {
+        "label": "Help",
+        "description": "Lose 5 HP to treat her wounds. She offers you her battle companion.",
+        "outcome": {
+          "description": "She presses a card into your hands before limping away. \"Use it well.\"",
+          "effects": [
+            { "type": "damage", "value": 5 },
+            { "type": "add_card", "cardRarity": "uncommon", "cardFaction": "any" }
+          ]
+        }
+      },
+      {
+        "label": "Ignore",
+        "description": "You have your own battles to fight.",
+        "outcome": {
+          "description": "You walk past in silence. The dungeon offers no rewards for mercy you don't give.",
+          "effects": []
+        }
+      }
+    ],
+    "artId": "art_wounded_soldier"
+  },
+  {
+    "id": "event_crossroads",
+    "name": "The Crossroads",
+    "narrative": "Three paths diverge before you. A faded signpost offers cryptic directions: left toward distant light, right toward the clang of metal, and straight ahead into darkness so thick it swallows sound.",
+    "choices": [
+      {
+        "label": "Left path",
+        "description": "Follow the light. Gain knowledge of what lies ahead.",
+        "outcome": {
+          "description": "From a vantage point, you spy the layout of the dungeon ahead.",
+          "effects": [{ "type": "reveal_map" }]
+        }
+      },
+      {
+        "label": "Right path",
+        "description": "Follow the sound. Discover a discarded piece of gear.",
+        "outcome": {
+          "description": "Among the wreckage, you find gear that still holds together.",
+          "effects": [{ "type": "add_gear", "cardRarity": "common" }]
+        }
+      },
+      {
+        "label": "Straight ahead",
+        "description": "Brave the darkness. Skip ahead on the map.",
+        "outcome": {
+          "description": "The darkness spits you out further than expected. You've bypassed a section of the dungeon.",
+          "effects": [{ "type": "skip_node" }]
+        }
+      }
+    ],
+    "artId": "art_crossroads"
+  }
+]

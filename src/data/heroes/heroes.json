@@ -1,0 +1,95 @@
+[
+  {
+    "id": "hero_kael",
+    "name": "Kael",
+    "title": "Ashwalker",
+    "faction": "might",
+    "startingHp": 28,
+    "passive": {
+      "name": "Battle Fury",
+      "description": "Whenever you play an Ally, it gains +1 Attack this turn."
+    },
+    "heroPower": {
+      "name": "Firebolt",
+      "description": "Deal 2 damage to a target enemy.",
+      "cost": 2,
+      "effect": { "type": "damage", "value": 2 },
+      "targetRequired": true
+    },
+    "starterDeckIds": [
+      "might_starter_ally_001",
+      "might_starter_ally_001",
+      "might_starter_ally_001",
+      "might_starter_ally_001",
+      "might_starter_spell_001",
+      "might_starter_spell_001",
+      "might_starter_spell_001",
+      "might_starter_spell_002",
+      "might_starter_spell_002",
+      "might_starter_signature_001"
+    ],
+    "artId": "art_kael"
+  },
+  {
+    "id": "hero_lira",
+    "name": "Lira",
+    "title": "Frostweaver",
+    "faction": "wisdom",
+    "startingHp": 25,
+    "passive": {
+      "name": "Arcane Efficiency",
+      "description": "Spells cost 1 less mana (minimum 0). Allies cost 1 more."
+    },
+    "heroPower": {
+      "name": "Insight",
+      "description": "Draw 1 card.",
+      "cost": 1,
+      "effect": { "type": "draw", "value": 1 },
+      "targetRequired": false
+    },
+    "starterDeckIds": [
+      "wisdom_starter_ally_001",
+      "wisdom_starter_ally_001",
+      "wisdom_starter_ally_001",
+      "wisdom_starter_ally_001",
+      "wisdom_starter_spell_001",
+      "wisdom_starter_spell_001",
+      "wisdom_starter_spell_001",
+      "wisdom_starter_spell_002",
+      "wisdom_starter_spell_002",
+      "wisdom_starter_signature_001"
+    ],
+    "artId": "art_lira"
+  },
+  {
+    "id": "hero_orin",
+    "name": "Orin",
+    "title": "Stonekeeper",
+    "faction": "heart",
+    "startingHp": 32,
+    "passive": {
+      "name": "Guardian's Grace",
+      "description": "At the end of your turn, heal your lowest-HP ally for 2."
+    },
+    "heroPower": {
+      "name": "Fortify",
+      "description": "Give an ally +2 Health and Ward.",
+      "cost": 2,
+      "effect": { "type": "buff_health", "value": 2 },
+      "targetRequired": true
+    },
+    "starterDeckIds": [
+      "heart_starter_ally_001",
+      "heart_starter_ally_001",
+      "heart_starter_ally_001",
+      "heart_starter_ally_001",
+      "heart_starter_spell_001",
+      "heart_starter_spell_001",
+      "heart_starter_spell_001",
+      "heart_starter_spell_002",
+      "heart_starter_spell_002",
+      "heart_starter_signature_001"
+    ],
+    "artId": "art_orin"
+  }
+]
