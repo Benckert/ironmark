@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useGameStore } from '@stores/gameStore.ts'
 import { useCombatStore } from '@stores/combatStore.ts'
 import { buildEncounter } from '@engine/encounters/encounterBuilder.ts'
@@ -70,123 +71,111 @@ function App() {
   const hasSavedRun = useGameStore((s) => s.hasSavedRun)
   const loadSavedRun = useGameStore((s) => s.loadSavedRun)
 
-  // Main menu
-  if (phase === 'main_menu' || !run) {
-    return (
-      <MainMenu
-        onNewRun={() => { startNewRun() }}
-        onContinue={() => { loadSavedRun() }}
-        hasSavedRun={hasSavedRun}
-      />
-    )
-  }
+  const screenContent = (() => {
+    if (phase === 'main_menu' || !run) {
+      return (
+        <MainMenu
+          onNewRun={() => { startNewRun() }}
+          onContinue={() => { loadSavedRun() }}
+          hasSavedRun={hasSavedRun}
+        />
+      )
+    }
+    if (phase === 'hero_select') return <HeroSelect onSelect={selectHero} />
+    if (phase === 'run_start_gamble') {
+      if (!runStartOptions) return null
+      return <RunStartGamble options={runStartOptions} onSelect={selectGambleOption} />
+    }
+    if (phase === 'map') {
+      if (!run.map) return null
+      return (
+        <MapScreen
+          map={run.map}
+          playerHp={run.hp}
+          playerMaxHp={run.maxHp}
+          gold={run.gold}
+          deckSize={run.deck.length}
+          onSelectNode={navigateToMapNode}
+        />
+      )
+    }
+    if (phase === 'combat' || phase === 'boss') return <CombatScreen onCombatEnd={onCombatEnd} />
+    if (phase === 'reward') return <RewardScreenWrapper />
+    if (phase === 'shop') {
+      if (!shop) return null
+      return (
+        <ShopScreen
+          shop={shop}
+          gold={run.gold}
+          deck={run.deck}
+          canAffordRemoval={run.gold >= shop.cardRemovalCost}
+          onBuyCard={useGameStore.getState().shopBuyCard}
+          onBuyGear={useGameStore.getState().shopBuyGear}
+          onRemoveCard={useGameStore.getState().shopRemoveCard}
+          onRerollShop={useGameStore.getState().shopReroll}
+          onLeave={useGameStore.getState().leaveShop}
+        />
+      )
+    }
+    if (phase === 'rest') {
+      return (
+        <RestScreen
+          hp={run.hp}
+          maxHp={run.maxHp}
+          healAmount={Math.floor(run.maxHp * 0.3)}
+          deck={run.deck}
+          onHeal={useGameStore.getState().restHeal}
+          onUpgrade={useGameStore.getState().restUpgrade}
+          onRemove={useGameStore.getState().restRemove}
+          onContinue={useGameStore.getState().returnToMap}
+        />
+      )
+    }
+    if (phase === 'event') {
+      if (!currentEvent) return null
+      return (
+        <EventScreen
+          event={currentEvent}
+          onChoose={useGameStore.getState().eventChoose}
+          onContinue={useGameStore.getState().eventContinue}
+        />
+      )
+    }
+    if (phase === 'victory') {
+      return (
+        <VictoryScreen
+          stats={run.stats}
+          deckSize={run.deck.length}
+          gearCount={run.gearInventory.length}
+          onMainMenu={goToMainMenu}
+        />
+      )
+    }
+    if (phase === 'defeat') {
+      return (
+        <DefeatScreen
+          stats={run.stats}
+          nodesVisited={run.stats.nodesVisited}
+          onMainMenu={goToMainMenu}
+        />
+      )
+    }
+    return null
+  })()
 
-  // Hero select
-  if (phase === 'hero_select') {
-    return <HeroSelect onSelect={selectHero} />
-  }
-
-  // Run-start gamble
-  if (phase === 'run_start_gamble') {
-    if (!runStartOptions) return null
-    return <RunStartGamble options={runStartOptions} onSelect={selectGambleOption} />
-  }
-
-  // Map
-  if (phase === 'map') {
-    if (!run.map) return null
-    return (
-      <MapScreen
-        map={run.map}
-        playerHp={run.hp}
-        playerMaxHp={run.maxHp}
-        gold={run.gold}
-        deckSize={run.deck.length}
-        onSelectNode={navigateToMapNode}
-      />
-    )
-  }
-
-  // Combat / Boss
-  if (phase === 'combat' || phase === 'boss') {
-    return <CombatScreen onCombatEnd={onCombatEnd} />
-  }
-
-  // Reward
-  if (phase === 'reward') {
-    return <RewardScreenWrapper />
-  }
-
-  // Shop
-  if (phase === 'shop') {
-    if (!shop) return null
-    return (
-      <ShopScreen
-        shop={shop}
-        gold={run.gold}
-        deck={run.deck}
-        canAffordRemoval={run.gold >= shop.cardRemovalCost}
-        onBuyCard={useGameStore.getState().shopBuyCard}
-        onBuyGear={useGameStore.getState().shopBuyGear}
-        onRemoveCard={useGameStore.getState().shopRemoveCard}
-        onRerollShop={useGameStore.getState().shopReroll}
-        onLeave={useGameStore.getState().leaveShop}
-      />
-    )
-  }
-
-  // Rest
-  if (phase === 'rest') {
-    return (
-      <RestScreen
-        hp={run.hp}
-        maxHp={run.maxHp}
-        healAmount={Math.floor(run.maxHp * 0.3)}
-        deck={run.deck}
-        onHeal={useGameStore.getState().restHeal}
-        onUpgrade={useGameStore.getState().restUpgrade}
-        onRemove={useGameStore.getState().restRemove}
-        onContinue={useGameStore.getState().returnToMap}
-      />
-    )
-  }
-
-  // Event
-  if (phase === 'event') {
-    if (!currentEvent) return null
-    return (
-      <EventScreen
-        event={currentEvent}
-        onChoose={useGameStore.getState().eventChoose}
-        onContinue={useGameStore.getState().eventContinue}
-      />
-    )
-  }
-
-  // Victory
-  if (phase === 'victory') {
-    return (
-      <VictoryScreen
-        stats={run.stats}
-        deckSize={run.deck.length}
-        gearCount={run.gearInventory.length}
-        onMainMenu={goToMainMenu}
-      />
-    )
-  }
-
-  // Defeat
-  if (phase === 'defeat') {
-    return (
-      <DefeatScreen
-        stats={run.stats}
-        nodesVisited={run.stats.nodesVisited}
-        onMainMenu={goToMainMenu}
-      />
-    )
-  }
-
-  return null
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={phase}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+      >
+        {screenContent}
+      </motion.div>
+    </AnimatePresence>
+  )
 }
 
 // Reward screen wrapper handles reward generation state
