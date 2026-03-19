@@ -67,9 +67,18 @@ function App() {
     }
   }, [phase, run?.currentNodeId])
 
+  const hasSavedRun = useGameStore((s) => s.hasSavedRun)
+  const loadSavedRun = useGameStore((s) => s.loadSavedRun)
+
   // Main menu
   if (phase === 'main_menu' || !run) {
-    return <MainMenu onNewRun={() => { startNewRun() }} />
+    return (
+      <MainMenu
+        onNewRun={() => { startNewRun() }}
+        onContinue={() => { loadSavedRun() }}
+        hasSavedRun={hasSavedRun}
+      />
+    )
   }
 
   // Hero select

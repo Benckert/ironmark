@@ -13,6 +13,8 @@ import { selectEvent, resolveChoice } from '@engine/events/eventEngine.ts'
 import { generateRunStartOptions } from '@engine/run/runStartGamble.ts'
 import { removeCardFromDeck, upgradeCard } from '@engine/cards/deckManager.ts'
 import { SeededRNG } from '../utils/random.ts'
+import { saveActiveRun, loadActiveRun, clearActiveRun, saveRunHistory } from '../db/database.ts'
+import type { RunHistoryEntry } from '@engine/types/run.ts'
 
 interface GameStore {
   run: RunState | null
@@ -61,6 +63,11 @@ interface GameStore {
   endRun: (result: 'victory' | 'defeat') => void
   goToMainMenu: () => void
 
+  // Persistence
+  autoSave: () => void
+  loadSavedRun: () => Promise<boolean>
+  hasSavedRun: boolean
+
   // Helpers
   getRng: (context: string) => SeededRNG
 }
@@ -104,6 +111,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   runStartOptions: null,
   visitedEventIds: [],
   shopRerollCount: 0,
+  hasSavedRun: false,
 
   startNewRun: () => {
     const seed = 'run-' + Date.now() + '-' + Math.floor(Math.random() * 10000)
@@ -291,6 +299,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const { run } = get()
     if (!run) return
     set({ run: { ...run, phase: 'map' }, shop: null, currentEvent: null })
+    // Auto-save when returning to map
+    get().autoSave()
   },
 
   onCombatEnd: (result: 'victory' | 'defeat') => {
@@ -488,11 +498,32 @@ export const useGameStore = create<GameStore>((set, get) => ({
     get().returnToMap()
   },
 
-  endRun: (_result: 'victory' | 'defeat') => {
-    // Run state already has the correct phase set
+  endRun: (result: 'victory' | 'defeat') => {
+    const { run } = get()
+    if (!run) return
+
+    // Save to run history
+    const entry: RunHistoryEntry = {
+      id: run.seed + '_' + Date.now(),
+      timestamp: Date.now(),
+      seed: run.seed,
+      heroId: run.hero?.id ?? 'unknown',
+      result,
+      stats: run.stats,
+      finalDeck: run.deck.map((c) => c.id),
+      finalGear: run.gearInventory.map((g) => g.id),
+      nodesVisited: run.stats.nodesVisited,
+    }
+    saveRunHistory(entry).catch(() => {})
+    clearActiveRun().catch(() => {})
   },
 
   goToMainMenu: () => {
+    const { run } = get()
+    // If run ended (victory/defeat), clear save
+    if (run && (run.phase === 'victory' || run.phase === 'defeat')) {
+      get().endRun(run.phase === 'victory' ? 'victory' : 'defeat')
+    }
     set({
       run: null,
       shop: null,
@@ -500,7 +531,27 @@ export const useGameStore = create<GameStore>((set, get) => ({
       runStartOptions: null,
       visitedEventIds: [],
       shopRerollCount: 0,
+      hasSavedRun: false,
     })
+  },
+
+  autoSave: () => {
+    const { run } = get()
+    if (!run) return
+    const json = JSON.stringify(run)
+    saveActiveRun(json).catch(() => {})
+  },
+
+  loadSavedRun: async (): Promise<boolean> => {
+    const json = await loadActiveRun()
+    if (!json) return false
+    try {
+      const run = JSON.parse(json) as RunState
+      set({ run, hasSavedRun: false })
+      return true
+    } catch {
+      return false
+    }
   },
 
   getRng: (context: string): SeededRNG => {
@@ -509,3 +560,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
     return new SeededRNG(seed + '_' + context)
   },
 }))
+
+// Check for saved run on module load
+loadActiveRun().then((data) => {
+  if (data) {
+    useGameStore.setState({ hasSavedRun: true })
+  }
+}).catch(() => {})
