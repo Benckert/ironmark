@@ -1,0 +1,265 @@
+[
+  {
+    "id": "enemy_goblin_scout",
+    "name": "Goblin Scout",
+    "hp": 6,
+    "attack": 3,
+    "tier": 1,
+    "intents": [
+      { "type": "attack", "value": 3, "description": "Slash for 3 damage" },
+      { "type": "attack", "value": 3, "description": "Slash for 3 damage" },
+      { "type": "buff", "value": 2, "description": "Gain +2 Attack", "effect": { "type": "buff_attack", "value": 2 } }
+    ],
+    "keywords": [],
+    "artId": "art_goblin_scout"
+  },
+  {
+    "id": "enemy_forest_spider",
+    "name": "Forest Spider",
+    "hp": 5,
+    "attack": 2,
+    "tier": 1,
+    "intents": [
+      { "type": "attack", "value": 2, "description": "Bite for 2 damage" },
+      { "type": "debuff", "value": 2, "description": "Apply Poison 2", "effect": { "type": "apply_status", "value": 2, "statusType": "poison" } }
+    ],
+    "keywords": [],
+    "artId": "art_forest_spider"
+  },
+  {
+    "id": "enemy_bandit_thug",
+    "name": "Bandit Thug",
+    "hp": 8,
+    "attack": 4,
+    "tier": 1,
+    "intents": [
+      { "type": "attack", "value": 4, "description": "Strike for 4 damage" },
+      { "type": "defend", "value": 3, "description": "Gain 3 Armor", "effect": { "type": "armor", "value": 3 } },
+      { "type": "attack", "value": 4, "description": "Strike for 4 damage" }
+    ],
+    "keywords": [],
+    "artId": "art_bandit_thug"
+  },
+  {
+    "id": "enemy_cave_bat",
+    "name": "Cave Bat",
+    "hp": 5,
+    "attack": 3,
+    "tier": 1,
+    "intents": [
+      { "type": "attack", "value": 3, "description": "Swoop for 3 damage" },
+      { "type": "attack", "value": 3, "description": "Swoop for 3 damage" }
+    ],
+    "keywords": [],
+    "artId": "art_cave_bat"
+  },
+  {
+    "id": "enemy_skeleton_soldier",
+    "name": "Skeleton Soldier",
+    "hp": 7,
+    "attack": 3,
+    "tier": 1,
+    "intents": [
+      { "type": "attack", "value": 3, "description": "Bone Slash for 3 damage" },
+      { "type": "attack", "value": 3, "description": "Bone Slash for 3 damage" },
+      { "type": "defend", "value": 2, "description": "Gain 2 Armor", "effect": { "type": "armor", "value": 2 } }
+    ],
+    "keywords": [],
+    "artId": "art_skeleton_soldier"
+  },
+  {
+    "id": "enemy_orc_warrior",
+    "name": "Orc Warrior",
+    "hp": 14,
+    "attack": 5,
+    "tier": 2,
+    "intents": [
+      { "type": "attack", "value": 5, "description": "Cleave for 5 damage" },
+      { "type": "buff", "value": 2, "description": "Gain +2 Attack", "effect": { "type": "buff_attack", "value": 2 } },
+      { "type": "attack", "value": 7, "description": "Heavy Strike for 7 damage" }
+    ],
+    "keywords": ["fury"],
+    "artId": "art_orc_warrior"
+  },
+  {
+    "id": "enemy_cultist_priest",
+    "name": "Cultist Priest",
+    "hp": 12,
+    "attack": 3,
+    "tier": 2,
+    "intents": [
+      { "type": "attack", "value": 3, "description": "Dark Bolt for 3 damage" },
+      { "type": "heal", "value": 4, "description": "Heal all enemies for 4", "effect": { "type": "heal", "value": 4 } },
+      { "type": "debuff", "value": 2, "description": "Apply Burn 2", "effect": { "type": "apply_status", "value": 2, "statusType": "burn" } }
+    ],
+    "keywords": [],
+    "artId": "art_cultist_priest"
+  },
+  {
+    "id": "enemy_dire_wolf",
+    "name": "Dire Wolf",
+    "hp": 10,
+    "attack": 4,
+    "tier": 2,
+    "intents": [
+      { "type": "attack", "value": 4, "description": "Bite for 4 damage" },
+      { "type": "attack", "value": 4, "description": "Bite for 4 damage" },
+      { "type": "buff", "value": 3, "description": "Howl: Gain +3 Attack", "effect": { "type": "buff_attack", "value": 3 } }
+    ],
+    "keywords": [],
+    "artId": "art_dire_wolf"
+  },
+  {
+    "id": "enemy_cursed_archer",
+    "name": "Cursed Archer",
+    "hp": 11,
+    "attack": 5,
+    "tier": 2,
+    "intents": [
+      { "type": "attack", "value": 5, "description": "Arrow for 5 damage" },
+      { "type": "debuff", "value": 3, "description": "Apply Poison 3", "effect": { "type": "apply_status", "value": 3, "statusType": "poison" } },
+      { "type": "attack", "value": 5, "description": "Arrow for 5 damage" }
+    ],
+    "keywords": [],
+    "artId": "art_cursed_archer"
+  },
+  {
+    "id": "enemy_stone_golem",
+    "name": "Stone Golem",
+    "hp": 16,
+    "attack": 4,
+    "tier": 2,
+    "intents": [
+      { "type": "attack", "value": 4, "description": "Smash for 4 damage" },
+      { "type": "defend", "value": 5, "description": "Harden: Gain 5 Armor", "effect": { "type": "armor", "value": 5 } },
+      { "type": "attack", "value": 6, "description": "Crush for 6 damage" }
+    ],
+    "keywords": [],
+    "artId": "art_stone_golem"
+  },
+  {
+    "id": "enemy_dark_knight",
+    "name": "Dark Knight",
+    "hp": 20,
+    "attack": 6,
+    "tier": 3,
+    "intents": [
+      { "type": "attack", "value": 6, "description": "Shadow Slash for 6 damage" },
+      { "type": "defend", "value": 4, "description": "Dark Shield: Gain 4 Armor and Ward", "effect": { "type": "armor", "value": 4 } },
+      { "type": "attack", "value": 8, "description": "Void Strike for 8 damage" }
+    ],
+    "keywords": ["ward"],
+    "artId": "art_dark_knight"
+  },
+  {
+    "id": "enemy_necromancer",
+    "name": "Necromancer",
+    "hp": 18,
+    "attack": 4,
+    "tier": 3,
+    "intents": [
+      { "type": "attack", "value": 4, "description": "Death Bolt for 4 damage" },
+      { "type": "summon", "value": 1, "description": "Summon a Skeleton", "summonId": "enemy_skeleton_token" },
+      { "type": "attack", "value": 6, "description": "Necrotic Blast for 6 damage" },
+      { "type": "summon", "value": 1, "description": "Summon a Skeleton", "summonId": "enemy_skeleton_token" }
+    ],
+    "keywords": [],
+    "artId": "art_necromancer"
+  },
+  {
+    "id": "enemy_flame_imp",
+    "name": "Flame Imp",
+    "hp": 15,
+    "attack": 5,
+    "tier": 3,
+    "intents": [
+      { "type": "attack", "value": 5, "description": "Fireball for 5 damage" },
+      { "type": "debuff", "value": 3, "description": "Apply Burn 3", "effect": { "type": "apply_status", "value": 3, "statusType": "burn" } },
+      { "type": "attack", "value": 7, "description": "Inferno for 7 damage" }
+    ],
+    "keywords": [],
+    "artId": "art_flame_imp"
+  },
+  {
+    "id": "enemy_shadow_assassin",
+    "name": "Shadow Assassin",
+    "hp": 16,
+    "attack": 7,
+    "tier": 3,
+    "intents": [
+      { "type": "attack", "value": 7, "description": "Backstab for 7 damage" },
+      { "type": "buff", "value": 3, "description": "Shadow Step: Gain +3 Attack", "effect": { "type": "buff_attack", "value": 3 } },
+      { "type": "attack", "value": 10, "description": "Assassinate for 10 damage" }
+    ],
+    "keywords": [],
+    "artId": "art_shadow_assassin"
+  },
+  {
+    "id": "enemy_wraith",
+    "name": "Wraith",
+    "hp": 22,
+    "attack": 5,
+    "tier": 3,
+    "intents": [
+      { "type": "attack", "value": 5, "description": "Spectral Touch for 5 damage" },
+      { "type": "debuff", "value": 2, "description": "Apply Burn 2 and Poison 2", "effect": { "type": "apply_status", "value": 2, "statusType": "burn" } },
+      { "type": "attack", "value": 7, "description": "Soul Drain for 7 damage" },
+      { "type": "heal", "value": 5, "description": "Heal self for 5", "effect": { "type": "heal", "value": 5 } }
+    ],
+    "keywords": ["ward"],
+    "artId": "art_wraith"
+  },
+  {
+    "id": "enemy_skeleton_token",
+    "name": "Skeleton",
+    "hp": 3,
+    "attack": 2,
+    "tier": 1,
+    "intents": [
+      { "type": "attack", "value": 2, "description": "Bone Strike for 2 damage" }
+    ],
+    "keywords": [],
+    "artId": "art_skeleton_token"
+  },
+  {
+    "id": "enemy_elite_ironbound",
+    "name": "Ironbound Sentinel",
+    "hp": 30,
+    "attack": 8,
+    "tier": 3,
+    "intents": [
+      { "type": "attack", "value": 8, "description": "Iron Slam for 8 damage" },
+      { "type": "defend", "value": 6, "description": "Iron Fortress: Gain 6 Armor", "effect": { "type": "armor", "value": 6 } },
+      { "type": "attack", "value": 8, "description": "Iron Slam for 8 damage" },
+      { "type": "defend", "value": 6, "description": "Iron Fortress: Gain 6 Armor", "effect": { "type": "armor", "value": 6 } }
+    ],
+    "keywords": ["ward"],
+    "artId": "art_ironbound_sentinel"
+  },
+  {
+    "id": "enemy_elite_shadowweaver",
+    "name": "Shadowweaver",
+    "hp": 25,
+    "attack": 5,
+    "tier": 3,
+    "intents": [
+      { "type": "attack", "value": 5, "description": "Shadow Bolt for 5 damage" },
+      { "type": "attack", "value": 5, "description": "Shadow Bolt for 5 damage" },
+      { "type": "summon", "value": 1, "description": "Summon a 3/3 Shade", "summonId": "enemy_shade_token" }
+    ],
+    "keywords": [],
+    "artId": "art_shadowweaver"
+  },
+  {
+    "id": "enemy_shade_token",
+    "name": "Shade",
+    "hp": 3,
+    "attack": 3,
+    "tier": 1,
+    "intents": [
+      { "type": "attack", "value": 3, "description": "Shadow Strike for 3 damage" }
+    ],
+    "keywords": [],
+    "artId": "art_shade_token"
+  }
+]

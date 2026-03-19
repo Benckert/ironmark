@@ -1,0 +1,54 @@
+[
+  {
+    "id": "boss_hollow_king",
+    "name": "The Hollow King",
+    "hp": 30,
+    "attack": 6,
+    "tier": 3,
+    "intents": [
+      { "type": "attack", "value": 6, "description": "Royal Strike for 6 damage" },
+      { "type": "summon", "value": 1, "description": "Summon a 1/1 Skeleton", "summonId": "boss_skeleton_token" },
+      { "type": "attack", "value": 8, "description": "Crown Slam for 8 damage" },
+      { "type": "heal", "value": 5, "description": "Dark Ritual: Heal 5 and summon a Skeleton", "effect": { "type": "heal", "value": 5 }, "summonId": "boss_skeleton_token" }
+    ],
+    "keywords": [],
+    "passive": {
+      "name": "Undying Legion",
+      "description": "When a Skeleton dies, The Hollow King gains +1 Attack permanently."
+    },
+    "phase2": {
+      "hpThreshold": 15,
+      "intents": [
+        { "type": "attack", "value": 10, "description": "Unholy Strike for 10 damage" },
+        { "type": "summon", "value": 1, "description": "Summon a 2/2 Skeleton with Deathblow", "summonId": "boss_skeleton_phase2_token" },
+        { "type": "attack", "value": 12, "description": "Reign of Bones for 12 damage" }
+      ]
+    },
+    "artId": "art_hollow_king"
+  },
+  {
+    "id": "boss_skeleton_token",
+    "name": "Skeleton Servant",
+    "hp": 1,
+    "attack": 1,
+    "tier": 1,
+    "intents": [
+      { "type": "attack", "value": 1, "description": "Weak Strike for 1 damage" }
+    ],
+    "keywords": [],
+    "artId": "art_skeleton_servant"
+  },
+  {
+    "id": "boss_skeleton_phase2_token",
+    "name": "Risen Skeleton",
+    "hp": 2,
+    "attack": 2,
+    "tier": 1,
+    "intents": [
+      { "type": "attack", "value": 2, "description": "Strike for 2 damage" }
+    ],
+    "keywords": ["deathblow"],
+    "statusOnDeath": { "type": "damage", "value": 3, "target": "hero" },
+    "artId": "art_risen_skeleton"
+  }
+]
