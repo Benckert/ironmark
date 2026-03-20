@@ -16,3 +16,10 @@ paths:
 - IDs MUST be unique across all card/gear collections
 - Run `validateData()` from `src/data/dataLoader.ts` after changes to verify integrity
 </important>
+
+## Directory layout
+- `cards/` — `heart.json`, `might.json`, `wisdom.json`, `neutral.json` (by faction)
+- `enemies/` — `stage1.json`, `bosses.json` (by tier/type)
+- `events/` — `stage1Events.json` (by stage)
+- `gear/` — `allGear.json`
+- `heroes/` — `heroes.json`

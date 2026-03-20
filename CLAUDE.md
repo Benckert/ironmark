@@ -15,6 +15,13 @@ IRONMARK is a solo roguelite fantasy deckbuilder web game built with React 19, T
 
 Domain-specific rules live in `.claude/rules/` and load automatically by path.
 
+<important if="you are creating or modifying .claude/ files, SKILL.md files, or any markdown config">
+Consult `agent-markdown-guide.md` before creating or editing markdown config files.
+Key principles: path-scope rules to relevant globs, use directive language,
+keep each file under 200 lines, use XML `<important>` tags for critical rules,
+quantify constraints (e.g., "≤ 50 lines" not "keep short").
+</important>
+
 ## Commands
 - `npm run dev` — start dev server
 - `npm test` — run test suite (watch mode)

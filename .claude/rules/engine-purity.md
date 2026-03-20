@@ -14,3 +14,21 @@ paths:
 - Complex card effects SHOULD be broken into composable Effect functions
 - Refer to `ironmark_PRD.md` for game mechanic specifications
 </important>
+
+Bad:
+```ts
+// WRONG — DOM access, mutating input, Math.random
+function dealDamage(state: CombatState, amount: number) {
+  state.hp -= amount  // mutation!
+  document.querySelector('.hp').textContent = state.hp  // DOM!
+  if (Math.random() > 0.5) { /* ... */ }  // unseeded!
+}
+```
+
+Good:
+```ts
+// RIGHT — pure function, new state, seeded RNG
+function dealDamage(state: CombatState, amount: number, rng: SeededRNG): CombatState {
+  return { ...state, player: { ...state.player, hp: state.player.hp - amount } }
+}
+```
