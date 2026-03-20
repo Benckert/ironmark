@@ -33,7 +33,7 @@ interface GameStore {
   returnToMap: () => void
 
   // Combat integration
-  onCombatEnd: (result: 'victory' | 'defeat') => void
+  onCombatEnd: (result: 'victory' | 'defeat', combatHp?: number, combatTurns?: number) => void
 
   // Rewards
   selectRewardCard: (card: Card) => void
@@ -303,24 +303,34 @@ export const useGameStore = create<GameStore>((set, get) => ({
     get().autoSave()
   },
 
-  onCombatEnd: (result: 'victory' | 'defeat') => {
+  onCombatEnd: (result: 'victory' | 'defeat', combatHp?: number, combatTurns?: number) => {
     const { run } = get()
     if (!run) return
 
+    // Sync HP and stats back from combat
+    const updatedRun = {
+      ...run,
+      hp: combatHp ?? run.hp,
+      stats: {
+        ...run.stats,
+        turnsPlayed: run.stats.turnsPlayed + (combatTurns ?? 0),
+      },
+    }
+
     if (result === 'defeat') {
-      set({ run: { ...run, phase: 'defeat' } })
+      set({ run: { ...updatedRun, phase: 'defeat' } })
       return
     }
 
     // Victory — check if it was boss
     const currentNode = run.map?.nodes.find((n) => n.id === run.currentNodeId)
     if (currentNode?.type === 'boss') {
-      set({ run: { ...run, phase: 'victory' } })
+      set({ run: { ...updatedRun, phase: 'victory' } })
       return
     }
 
     // Regular combat/elite victory — go to reward
-    set({ run: { ...run, phase: 'reward' } })
+    set({ run: { ...updatedRun, phase: 'reward' } })
   },
 
   selectRewardCard: (card: Card) => {

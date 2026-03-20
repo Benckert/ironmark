@@ -15,7 +15,6 @@ export default function CombatScreen({ onCombatEnd }: CombatScreenProps) {
   const beginTurn = useCombatStore((s) => s.beginTurn)
   const endTurn = useCombatStore((s) => s.endTurn)
   const targetingMode = useCombatStore((s) => s.targetingMode)
-  const selectCard = useCombatStore((s) => s.selectCard)
   const [showDeck, setShowDeck] = useState(false)
   const [combatEnded, setCombatEnded] = useState(false)
 
@@ -56,7 +55,7 @@ export default function CombatScreen({ onCombatEnd }: CombatScreenProps) {
       {/* Targeting mode indicator */}
       {targetingMode && (
         <div className="absolute top-2 left-1/2 -translate-x-1/2 z-40 bg-red-900/80 text-red-200 px-4 py-1 rounded-full text-sm border border-red-700">
-          Select a target — <button onClick={() => selectCard(null)} className="underline">Cancel</button>
+          Select a target — <button onClick={() => useCombatStore.getState().cancelTargeting()} className="underline">Cancel</button>
         </div>
       )}
 

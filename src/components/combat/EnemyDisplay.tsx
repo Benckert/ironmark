@@ -15,13 +15,17 @@ const intentIcons: Record<string, string> = {
 export default function EnemyDisplay() {
   const combat = useCombatStore((s) => s.combat)
   const targetingMode = useCombatStore((s) => s.targetingMode)
+  const heroPowerTargeting = useCombatStore((s) => s.heroPowerTargeting)
   const selectedCardId = useCombatStore((s) => s.selectedCardId)
   const playCard = useCombatStore((s) => s.playCard)
+  const useHeroPower = useCombatStore((s) => s.useHeroPower)
 
   if (!combat) return null
 
   const handleEnemyClick = (enemy: EnemyInstance) => {
-    if (targetingMode && selectedCardId) {
+    if (heroPowerTargeting) {
+      useHeroPower(enemy.instanceId)
+    } else if (targetingMode && selectedCardId) {
       playCard(selectedCardId, enemy.instanceId)
     }
   }
@@ -67,7 +71,7 @@ function EnemyCard({
       <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-slate-700 rounded-full px-2 py-0.5 text-xs flex items-center gap-1 border border-slate-600">
         <span>{intentIcons[intent.type] || '?'}</span>
         <span className="text-white font-bold">
-          {intent.value + enemy.buffs.attack}
+          {intent.type === 'attack' ? intent.value + enemy.buffs.attack : intent.value}
         </span>
       </div>
 

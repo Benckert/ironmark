@@ -22,13 +22,16 @@ interface CombatStore {
   heroDefinition: HeroDefinition | null
   selectedCardId: string | null
   targetingMode: boolean
+  heroPowerTargeting: boolean
   animatingEnemyPhase: boolean
 
   initCombat: (runState: RunState, enemies: EnemyTemplate[], seed: string) => void
   beginTurn: () => void
   selectCard: (cardId: string | null) => void
   playCard: (cardId: string, targetId?: string) => void
+  activateHeroPowerTargeting: () => void
   useHeroPower: (targetId?: string) => void
+  cancelTargeting: () => void
   endTurn: () => void
   canPlay: (card: Card) => boolean
   getCardCost: (card: Card) => number
@@ -42,6 +45,7 @@ export const useCombatStore = create<CombatStore>((set, get) => ({
   heroDefinition: null,
   selectedCardId: null,
   targetingMode: false,
+  heroPowerTargeting: false,
   animatingEnemyPhase: false,
 
   initCombat: (runState, enemies, seed) => {
@@ -53,6 +57,7 @@ export const useCombatStore = create<CombatStore>((set, get) => ({
       heroDefinition: runState.hero,
       selectedCardId: null,
       targetingMode: false,
+      heroPowerTargeting: false,
       animatingEnemyPhase: false,
     })
   },
@@ -99,11 +104,19 @@ export const useCombatStore = create<CombatStore>((set, get) => ({
     set({ combat: newState, selectedCardId: null, targetingMode: false })
   },
 
+  activateHeroPowerTargeting: () => {
+    set({ heroPowerTargeting: true, targetingMode: true, selectedCardId: null })
+  },
+
   useHeroPower: (targetId) => {
     const { combat, heroDefinition } = get()
     if (!combat || !heroDefinition) return
     const newState = engineUseHeroPower(combat, targetId, heroDefinition)
-    set({ combat: newState })
+    set({ combat: newState, heroPowerTargeting: false, targetingMode: false })
+  },
+
+  cancelTargeting: () => {
+    set({ targetingMode: false, heroPowerTargeting: false, selectedCardId: null })
   },
 
   endTurn: () => {
@@ -150,6 +163,7 @@ export const useCombatStore = create<CombatStore>((set, get) => ({
       heroDefinition: null,
       selectedCardId: null,
       targetingMode: false,
+      heroPowerTargeting: false,
       animatingEnemyPhase: false,
     })
   },

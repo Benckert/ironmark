@@ -4,6 +4,7 @@ export default function HeroHUD() {
   const combat = useCombatStore((s) => s.combat)
   const heroDefinition = useCombatStore((s) => s.heroDefinition)
   const useHeroPower = useCombatStore((s) => s.useHeroPower)
+  const activateHeroPowerTargeting = useCombatStore((s) => s.activateHeroPowerTargeting)
 
   if (!combat || !heroDefinition) return null
 
@@ -67,9 +68,7 @@ export default function HeroHUD() {
         onClick={() => {
           if (canUseHeroPower) {
             if (heroDefinition.heroPower.targetRequired) {
-              // Would need targeting mode — for now just use on first enemy
-              const target = combat.enemies[0]
-              if (target) useHeroPower(target.instanceId)
+              activateHeroPowerTargeting()
             } else {
               useHeroPower()
             }

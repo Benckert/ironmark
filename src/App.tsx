@@ -99,7 +99,16 @@ function App() {
         />
       )
     }
-    if (phase === 'combat' || phase === 'boss') return <CombatScreen onCombatEnd={onCombatEnd} />
+    if (phase === 'combat' || phase === 'boss') {
+      return (
+        <CombatScreen
+          onCombatEnd={(result) => {
+            const combat = useCombatStore.getState().combat
+            onCombatEnd(result, combat?.player.hp, combat?.turn)
+          }}
+        />
+      )
+    }
     if (phase === 'reward') return <RewardScreenWrapper />
     if (phase === 'shop') {
       if (!shop) return null
