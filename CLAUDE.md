@@ -1,34 +1,19 @@
-# CLAUDE.md — Instructions for AI Assistants
+# CLAUDE.md — IRONMARK
 
 ## Project Overview
-IRONMARK is a solo roguelite fantasy deckbuilder web game.
-Read ironmark_PRD.md for full game design specification.
-Read ironmark_IMPLEMENTATION_PLAN.md for build instructions.
+IRONMARK is a solo roguelite fantasy deckbuilder web game built with React 19, TypeScript, Zustand, and Vite.
 
-## Architecture Rules
-1. Game engine (`src/engine/`) is PURE TypeScript. No React imports. No DOM access.
-   Engine functions take state in, return new state out.
-2. All card/enemy/event data lives in `src/data/` as JSON files.
-   Balance changes = JSON edits, never code changes.
-3. Zustand stores (`src/stores/`) are thin wrappers that call engine functions.
-   Stores do NOT contain game logic.
-4. All randomness uses seeded PRNG via the seedrandom library.
-   Never use Math.random() directly.
-5. State must be serializable to JSON (no functions, classes, or circular refs in state).
+- **Game design spec:** `ironmark_PRD.md`
+- **Build plan:** `ironmark_IMPLEMENTATION_PLAN.md`
 
-## Code Style
-- Strict TypeScript (no `any`, no `as` casts unless absolutely necessary)
-- Pure functions preferred. Minimize side effects.
-- Name files in camelCase. Name components in PascalCase.
-- Export types from `src/engine/types/`. Import them everywhere.
-- Prefer `interface` over `type` for object shapes.
-- Use descriptive variable names (no single-letter variables except loop counters).
+## Architecture (high-level)
+1. `src/engine/` — Pure TypeScript game logic. No React, no DOM.
+2. `src/data/` — JSON data files. Balance = JSON edits only.
+3. `src/stores/` — Thin Zustand wrappers. No game logic.
+4. `src/components/` — React UI. Reads stores, dispatches actions.
+5. All randomness uses seeded PRNG (`seedrandom`). Never `Math.random()`.
 
-## Testing
-- Every engine function must have unit tests.
-- Test file lives next to source file: `combatEngine.ts` → `combatEngine.test.ts`
-- Use `describe` blocks grouped by function name.
-- Test edge cases: empty deck, 0 HP, max mana, full board, etc.
+Domain-specific rules live in `.claude/rules/` and load automatically by path.
 
 ## Commands
 - `npm run dev` — start dev server
@@ -37,7 +22,7 @@ Read ironmark_IMPLEMENTATION_PLAN.md for build instructions.
 - `npm run build` — production build
 
 ## When in Doubt
-- Read ironmark_PRD.md Section relevant to the feature you're building.
+- Read `ironmark_PRD.md` section relevant to the feature.
 - If PRD doesn't cover it, ask the user before assuming.
 - Prefer simpler implementations over clever ones.
 - If a card effect is complex, break it into composable Effect functions.
