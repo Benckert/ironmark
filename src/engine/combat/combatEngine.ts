@@ -8,7 +8,7 @@ import type {
 import type { EnemyTemplate } from '@engine/types/enemy.ts'
 import type { RunState } from '@engine/types/run.ts'
 import { SeededRNG } from '../../utils/random.ts'
-import { drawCardsWithRng, discardHand } from '../cards/deckManager.ts'
+import { drawCards, drawCardsWithRng, discardHand } from '../cards/deckManager.ts'
 import {
   dealDamageToEnemy,
   healHero,
@@ -363,7 +363,7 @@ function playSpellCard(state: CombatState, card: SpellCard, targetId?: string): 
     }
 
     case 'draw': {
-      // Draw will be done by caller if needed — mark in log
+      currentState = drawCards(currentState, effect.value)
       break
     }
 
@@ -499,7 +499,7 @@ export function useHeroPower(
       break
     }
     case 'draw': {
-      // Draw handled externally
+      currentState = drawCards(currentState, effect.value)
       break
     }
     case 'buff_health': {

@@ -114,7 +114,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   hasSavedRun: false,
 
   startNewRun: () => {
-    const seed = 'run-' + Date.now() + '-' + Math.floor(Math.random() * 10000)
+    const randomPart = crypto.getRandomValues(new Uint32Array(1))[0]
+    const seed = 'run-' + Date.now() + '-' + randomPart
     set({
       run: createEmptyRun(seed),
       shop: null,
@@ -533,16 +534,30 @@ export const useGameStore = create<GameStore>((set, get) => ({
     // If run ended (victory/defeat), clear save
     if (run && (run.phase === 'victory' || run.phase === 'defeat')) {
       get().endRun(run.phase === 'victory' ? 'victory' : 'defeat')
+      set({
+        run: null,
+        shop: null,
+        currentEvent: null,
+        runStartOptions: null,
+        visitedEventIds: [],
+        shopRerollCount: 0,
+        hasSavedRun: false,
+      })
+    } else {
+      // Active run — save it so player can continue later
+      if (run) {
+        get().autoSave()
+      }
+      set({
+        run: null,
+        shop: null,
+        currentEvent: null,
+        runStartOptions: null,
+        visitedEventIds: [],
+        shopRerollCount: 0,
+        hasSavedRun: !!run,
+      })
     }
-    set({
-      run: null,
-      shop: null,
-      currentEvent: null,
-      runStartOptions: null,
-      visitedEventIds: [],
-      shopRerollCount: 0,
-      hasSavedRun: false,
-    })
   },
 
   autoSave: () => {

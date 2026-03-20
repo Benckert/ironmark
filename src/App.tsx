@@ -204,8 +204,12 @@ function RewardScreenWrapper() {
     const rng = new SeededRNG(run.seed + '_reward_' + run.currentNodeId)
     const nodeType = currentNode?.type ?? 'combat'
     const goldEarned = generateGoldReward(nodeType, rng)
-    const { cards } = generateCardRewards(run.hero!.faction, run.rarityOffset, isElite, rng)
+    const { cards, newRarityOffset } = generateCardRewards(run.hero!.faction, run.rarityOffset, isElite, rng)
     const gearChoice = isElite ? generateGearReward(rng) : null
+    // Persist pity offset
+    useGameStore.setState((state) => ({
+      run: state.run ? { ...state.run, rarityOffset: newRarityOffset } : state.run,
+    }))
     return { cards, goldEarned, gearChoice }
   })
 
@@ -237,7 +241,10 @@ function RewardScreenWrapper() {
     const newRerollCount = rerollCount + 1
     setRerollCount(newRerollCount)
     const rng = new SeededRNG(run.seed + '_reward_reroll_' + newRerollCount)
-    const { cards } = generateCardRewards(run.hero!.faction, run.rarityOffset, isElite, rng)
+    const { cards, newRarityOffset } = generateCardRewards(run.hero!.faction, run.rarityOffset, isElite, rng)
+    useGameStore.setState((state) => ({
+      run: state.run ? { ...state.run, rarityOffset: newRarityOffset } : state.run,
+    }))
     setCardRewards((prev) => ({ ...prev, cards }))
   }
 

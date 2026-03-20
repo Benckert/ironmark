@@ -193,6 +193,17 @@ export function tickStatuses(state: CombatState): CombatState {
     }
   }
 
+  // Decay enemy statuses: burn decrements by 1 each turn, poison stays until cured
+  currentState = {
+    ...currentState,
+    enemies: currentState.enemies.map((enemy) => ({
+      ...enemy,
+      statuses: enemy.statuses
+        .map((s) => s.type === 'burn' ? { ...s, stacks: s.stacks - 1 } : s)
+        .filter((s) => s.stacks > 0),
+    })),
+  }
+
   // Tick burn/poison on hero
   for (const status of currentState.player.statuses) {
     if (status.type === 'burn' || status.type === 'poison') {
@@ -203,6 +214,17 @@ export function tickStatuses(state: CombatState): CombatState {
       )
       currentState = newState
     }
+  }
+
+  // Decay hero statuses
+  currentState = {
+    ...currentState,
+    player: {
+      ...currentState.player,
+      statuses: currentState.player.statuses
+        .map((s) => s.type === 'burn' ? { ...s, stacks: s.stacks - 1 } : s)
+        .filter((s) => s.stacks > 0),
+    },
   }
 
   return currentState
