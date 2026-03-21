@@ -200,7 +200,7 @@ export function executeEnemyPhase(state: CombatState, rng?: SeededRNG): CombatSt
     const currentEnemy = currentState.enemies.find((e) => e.instanceId === enemy.instanceId)
     if (!currentEnemy || currentEnemy.hp <= 0) continue
 
-    currentState = executeEnemyIntent(currentState, currentEnemy)
+    currentState = executeEnemyIntent(currentState, currentEnemy, rng)
 
     if (currentState.result === 'defeat') {
       return { ...currentState, phase: 'combat_over' }

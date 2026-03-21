@@ -120,35 +120,30 @@ export default function CombatScreen({ onCombatEnd }: CombatScreenProps) {
         <span className="capitalize">{combat.phase.replace('_', ' ')}</span>
       </div>
 
-      {/* Combat board — stacks vertically on mobile */}
-      <div className="flex flex-col md:flex-row md:items-stretch">
-        {/* Enemy area */}
-        <div className="flex-shrink-0 md:flex-1 bg-red-950/10 border-b md:border-b-0 md:border-r border-red-900/20">
+      {/* Combat board — vertical layout (Hearthstone-style) */}
+      <div className="flex flex-col flex-1 min-h-0">
+        {/* Enemy area (top) */}
+        <div className="flex-1 bg-red-950/10 border-b border-red-900/20 flex flex-col justify-end">
           <div className="text-[10px] text-red-400/50 uppercase tracking-wider text-center pt-1">Enemies</div>
           <EnemyDisplay />
         </div>
 
         {/* Battle divider */}
-        <div className="relative mx-8 md:mx-0 md:my-0 md:flex md:items-center">
-          <div className="border-t md:border-t-0 md:border-l md:h-full border-slate-600/30" />
-          <div className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 md:static md:translate-x-0 md:translate-y-0 bg-slate-900 px-3 text-[10px] text-slate-600 uppercase tracking-widest">
+        <div className="relative">
+          <div className="border-t border-slate-600/30" />
+          <div className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-900 px-3 text-[10px] text-slate-600 uppercase tracking-widest">
             vs
           </div>
         </div>
 
-        {/* Ally area */}
-        <div className="flex-shrink-0 md:flex-1 bg-emerald-950/10 border-t md:border-t-0 md:border-l border-emerald-900/20">
+        {/* Ally area + Hero HUD (bottom half) */}
+        <div className="flex-1 bg-emerald-950/10 border-t border-emerald-900/20 flex flex-col justify-start">
           <div className="text-[10px] text-emerald-400/50 uppercase tracking-wider text-center pt-1">Allies</div>
           <AllyBoard />
+          <div className="mt-auto px-4 pb-2">
+            <HeroHUD />
+          </div>
         </div>
-      </div>
-
-      {/* Spacer */}
-      <div className="flex-1" />
-
-      {/* Hero HUD */}
-      <div className="flex-shrink-0 px-4 mb-2">
-        <HeroHUD />
       </div>
 
       {/* Controls */}

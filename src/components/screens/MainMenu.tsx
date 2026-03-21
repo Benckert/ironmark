@@ -74,10 +74,10 @@ export default function MainMenu({ onNewRun, onContinue, hasSavedRun }: MainMenu
       {/* Tutorial overlay */}
       {showTutorial && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50" role="dialog" aria-label="How to play tutorial" aria-modal="true">
-          <div className="bg-slate-800 rounded-xl p-8 max-w-md w-full mx-4 border border-slate-600">
+          <div className="bg-slate-800 rounded-xl p-8 w-[420px] max-w-[calc(100vw-2rem)] mx-4 border border-slate-600">
             <div className="text-xs text-slate-500 mb-2">{tutorialStep + 1} / {tutorialSteps.length}</div>
             <h2 className="text-xl font-bold text-amber-400 mb-3">{tutorialSteps[tutorialStep].title}</h2>
-            <p className="text-slate-300 mb-6 leading-relaxed">{tutorialSteps[tutorialStep].text}</p>
+            <p className="text-slate-300 mb-6 leading-relaxed min-h-[4.5rem]">{tutorialSteps[tutorialStep].text}</p>
             <div className="flex justify-between">
               <button
                 onClick={() => setShowTutorial(false)}

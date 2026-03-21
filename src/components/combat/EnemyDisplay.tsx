@@ -12,6 +12,16 @@ const intentIcons: Record<string, string> = {
   unknown: '\u2753',
 }
 
+const intentDescriptions: Record<string, string> = {
+  attack: 'Intends to attack',
+  defend: 'Intends to gain armor',
+  buff: 'Intends to buff itself',
+  debuff: 'Intends to debuff you',
+  heal: 'Intends to heal',
+  summon: 'Intends to summon an ally',
+  unknown: 'Unknown intent',
+}
+
 export default function EnemyDisplay() {
   const combat = useCombatStore((s) => s.combat)
   const targetingMode = useCombatStore((s) => s.targetingMode)
@@ -70,7 +80,7 @@ function EnemyCard({
       `}
     >
       {/* Intent */}
-      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-slate-700 rounded-full px-2 py-0.5 text-xs flex items-center gap-1 border border-slate-600">
+      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-slate-700 rounded-full px-2 py-0.5 text-xs flex items-center gap-1 border border-slate-600 cursor-help" title={`${intentDescriptions[intent.type] ?? 'Unknown'} for ${intent.value + enemy.buffs.attack}`}>
         <span>{intentIcons[intent.type] || '?'}</span>
         <span className="text-white font-bold">
           {intent.value + enemy.buffs.attack}
