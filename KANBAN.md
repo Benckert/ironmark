@@ -30,6 +30,14 @@
 
 | ID | Priority | Task | Notes |
 |----|----------|------|-------|
+| BUG-002 | P0 | HP not persisting after combat | Hero HP resets to max when returning to map; `onCombatEnd` in gameStore.ts doesn't sync `combat.player.hp` back to `run.hp` |
+| BUG-003 | P1 | Combat starts at Turn 2 instead of Turn 1 | Every combat shows "Turn 2" on first player action; likely double-increment in combatEngine.ts turn init |
+| BUG-004 | P1 | Run summary stats all zero | Defeat screen shows Turns/Damage/Cards/Enemies all as 0; combat stats not accumulated into run state |
+| BUG-005 | P1 | Gear from events not equipped | Event grants gear (e.g. Healing Salve) to `gearInventory` but never calls `equipGear`; combat slots stay empty |
+| BUG-006 | P2 | React duplicate key errors on card lists | Rest upgrade screen triggers "Encountered two children with the same key" for duplicate cards; need unique instance keys |
+| UI-005 | P1 | Card names truncated across all screens | "Ashblade Rec...", "Emberheart Knig...", "Divine Restor..." — card name overflow on hero selection, hand, shop, rest, rewards |
+| UI-006 | P2 | Card rows overflow/clip at viewport edges | Hero selection, Fate's Offer, and hand cards are clipped on left/right edges; needs responsive layout or horizontal scroll |
+| UI-007 | P3 | Unaffordable shop items lack visual indicator | Cards too expensive to buy appear identical to affordable ones (no grayed price or disabled state) |
 | UX-002 | P1 | Ally targeting — let player choose attack target | Currently auto-targets enemies[0]; needs target selection UI |
 | UX-003 | P2 | Card tooltips — show keyword explanations on hover | Strike, Deathblow, Echo, Ward, Taunt, Burn, Fury |
 | UX-004 | P2 | Tutorial / onboarding flow | First-run guidance for new players |
