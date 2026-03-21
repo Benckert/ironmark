@@ -203,7 +203,7 @@ export function playCard(
   state: CombatState,
   cardId: string,
   targetId?: string,
-  _rng?: SeededRNG,
+  rng?: SeededRNG,
 ): CombatState {
   const cardIndex = state.hand.findIndex((c) => c.id === cardId)
   if (cardIndex === -1) return state
@@ -223,7 +223,7 @@ export function playCard(
       currentState = playAllyCard(currentState, card as AllyCard)
       break
     case 'spell':
-      currentState = playSpellCard(currentState, card as SpellCard, targetId)
+      currentState = playSpellCard(currentState, card as SpellCard, targetId, rng)
       break
     case 'gear':
       currentState = playGearCard(currentState, card as GearCard)
@@ -252,7 +252,7 @@ export function playCard(
   const { state: afterAllyDeath, deadAllies } = removeDeadAllies(currentState)
   currentState = afterAllyDeath
   for (const deadAlly of deadAllies) {
-    currentState = resolveDeathblow(currentState, deadAlly)
+    currentState = resolveDeathblow(currentState, deadAlly, rng)
   }
 
   // Check victory
@@ -299,7 +299,7 @@ function playAllyCard(state: CombatState, card: AllyCard): CombatState {
   }
 }
 
-function playSpellCard(state: CombatState, card: SpellCard, targetId?: string): CombatState {
+function playSpellCard(state: CombatState, card: SpellCard, targetId?: string, rng?: SeededRNG): CombatState {
   let currentState = state
   const spellDamageBonus = getSpellDamageBonus(currentState.player.equippedGear)
   const effect = card.effect
@@ -363,7 +363,9 @@ function playSpellCard(state: CombatState, card: SpellCard, targetId?: string): 
     }
 
     case 'draw': {
-      // Draw will be done by caller if needed — mark in log
+      if (rng) {
+        currentState = drawCardsWithRng(currentState, effect.value, rng)
+      }
       break
     }
 
@@ -467,6 +469,7 @@ export function useHeroPower(
   state: CombatState,
   targetId?: string,
   heroDefinition?: { heroPower: { cost: number; effect: { type: string; value: number } } },
+  rng?: SeededRNG,
 ): CombatState {
   if (state.player.heroPowerUsedThisTurn) return state
   if (!heroDefinition) return state
@@ -499,7 +502,9 @@ export function useHeroPower(
       break
     }
     case 'draw': {
-      // Draw handled externally
+      if (rng) {
+        currentState = drawCardsWithRng(currentState, effect.value, rng)
+      }
       break
     }
     case 'buff_health': {
@@ -532,7 +537,7 @@ export function useHeroPower(
   return currentState
 }
 
-export function endPlayerTurn(state: CombatState): CombatState {
+export function endPlayerTurn(state: CombatState, rng?: SeededRNG): CombatState {
   if (state.phase !== 'player_action') return state
 
   let currentState = state
@@ -555,7 +560,7 @@ export function endPlayerTurn(state: CombatState): CombatState {
     currentState = afterDamage
 
     // Resolve Strike
-    currentState = resolveStrike(currentState, ally, target.instanceId)
+    currentState = resolveStrike(currentState, ally, target.instanceId, rng)
 
     // Mark as attacked
     const allyIndex = currentState.allies.findIndex((a) => a.instanceId === ally.instanceId)
@@ -574,7 +579,7 @@ export function endPlayerTurn(state: CombatState): CombatState {
   const { state: afterAllyDeath, deadAllies } = removeDeadAllies(currentState)
   currentState = afterAllyDeath
   for (const deadAlly of deadAllies) {
-    currentState = resolveDeathblow(currentState, deadAlly)
+    currentState = resolveDeathblow(currentState, deadAlly, rng)
   }
 
   // Check victory after ally attacks
@@ -601,7 +606,7 @@ export function endPlayerTurn(state: CombatState): CombatState {
   return { ...currentState, phase: 'enemy_phase' }
 }
 
-export function executeEnemyPhase(state: CombatState): CombatState {
+export function executeEnemyPhase(state: CombatState, rng?: SeededRNG): CombatState {
   if (state.phase !== 'enemy_phase') return state
 
   let currentState = state
@@ -625,7 +630,7 @@ export function executeEnemyPhase(state: CombatState): CombatState {
     const { state: afterAllyDeath, deadAllies } = removeDeadAllies(currentState)
     currentState = afterAllyDeath
     for (const deadAlly of deadAllies) {
-      currentState = resolveDeathblow(currentState, deadAlly)
+      currentState = resolveDeathblow(currentState, deadAlly, rng)
     }
 
     // Advance enemy intent

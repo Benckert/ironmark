@@ -1,12 +1,15 @@
 import type { CombatState, AllyInstance, EnemyInstance } from '@engine/types/combat.ts'
 import type { StatusEffect } from '@engine/types/common.ts'
 import type { SpellCard } from '@engine/types/card.ts'
+import { SeededRNG } from '../../utils/random.ts'
+import { drawCardsWithRng } from '../cards/deckManager.ts'
 import { dealDamageToEnemy, dealDamageToHero } from './damageResolver.ts'
 
 export function resolveStrike(
   state: CombatState,
   ally: AllyInstance,
   targetEnemyId: string,
+  rng?: SeededRNG,
 ): CombatState {
   if (!ally.card.keywords.includes('strike') || !ally.card.strikeEffect) {
     return state
@@ -44,7 +47,9 @@ export function resolveStrike(
       return { ...state, allies }
     }
     case 'draw': {
-      // Draw effects will be handled by combat engine
+      if (rng) {
+        return drawCardsWithRng(state, effect.value, rng)
+      }
       return state
     }
     default:
@@ -55,6 +60,7 @@ export function resolveStrike(
 export function resolveDeathblow(
   state: CombatState,
   ally: AllyInstance,
+  rng?: SeededRNG,
 ): CombatState {
   if (!ally.card.keywords.includes('deathblow') || !ally.card.deathblowEffect) {
     return state
@@ -80,7 +86,9 @@ export function resolveDeathblow(
       return currentState
     }
     case 'draw': {
-      // Will be handled by combat engine
+      if (rng) {
+        return drawCardsWithRng(state, effect.value, rng)
+      }
       return state
     }
     case 'heal': {

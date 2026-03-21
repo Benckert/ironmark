@@ -65,7 +65,7 @@ export const useCombatStore = create<CombatStore>((set, get) => ({
   },
 
   selectCard: (cardId) => {
-    const { combat } = get()
+    const { combat, rng } = get()
     if (!combat || !cardId) {
       set({ selectedCardId: null, targetingMode: false })
       return
@@ -87,37 +87,37 @@ export const useCombatStore = create<CombatStore>((set, get) => ({
       set({ selectedCardId: cardId, targetingMode: true })
     } else {
       // Play immediately
-      const newState = enginePlayCard(combat, cardId)
+      const newState = enginePlayCard(combat, cardId, undefined, rng ?? undefined)
       set({ combat: newState, selectedCardId: null, targetingMode: false })
     }
   },
 
   playCard: (cardId, targetId) => {
-    const { combat } = get()
+    const { combat, rng } = get()
     if (!combat) return
-    const newState = enginePlayCard(combat, cardId, targetId)
+    const newState = enginePlayCard(combat, cardId, targetId, rng ?? undefined)
     set({ combat: newState, selectedCardId: null, targetingMode: false })
   },
 
   useHeroPower: (targetId) => {
-    const { combat, heroDefinition } = get()
+    const { combat, heroDefinition, rng } = get()
     if (!combat || !heroDefinition) return
-    const newState = engineUseHeroPower(combat, targetId, heroDefinition)
+    const newState = engineUseHeroPower(combat, targetId, heroDefinition, rng ?? undefined)
     set({ combat: newState })
   },
 
   endTurn: () => {
-    const { combat } = get()
+    const { combat, rng } = get()
     if (!combat || combat.phase !== 'player_action') return
 
     set({ animatingEnemyPhase: true })
 
     // End player turn (ally attacks)
-    let newState = endPlayerTurn(combat)
+    let newState = endPlayerTurn(combat, rng ?? undefined)
 
     // Execute enemy phase
     if (newState.result === 'ongoing') {
-      newState = executeEnemyPhase(newState)
+      newState = executeEnemyPhase(newState, rng ?? undefined)
     }
 
     set({ combat: newState, animatingEnemyPhase: false })

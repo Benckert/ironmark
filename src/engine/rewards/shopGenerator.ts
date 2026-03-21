@@ -17,15 +17,15 @@ export interface ShopInventory {
 }
 
 const CARD_PRICES: Record<Rarity, [number, number]> = {
-  common: [25, 35],
-  uncommon: [50, 65],
-  rare: [80, 100],
+  common: [15, 25],
+  uncommon: [35, 50],
+  rare: [60, 80],
 }
 
 const GEAR_PRICES: Record<Rarity, [number, number]> = {
-  common: [40, 50],
-  uncommon: [65, 85],
-  rare: [100, 120],
+  common: [25, 35],
+  uncommon: [45, 65],
+  rare: [75, 95],
 }
 
 export function generateShop(
@@ -40,8 +40,8 @@ export function generateShop(
   return {
     cards,
     gear,
-    cardRemovalCost: 50 + cardRemovalCount * 25,
-    rerollCost: 10 + shopRerollCount * 10,
+    cardRemovalCost: 35 + cardRemovalCount * 15,
+    rerollCost: 5 + shopRerollCount * 5,
     rerollCount: shopRerollCount,
   }
 }
@@ -147,6 +147,6 @@ export function buyCardRemoval(
 
   return {
     newGold: gold - shop.cardRemovalCost,
-    newCardRemovalCost: shop.cardRemovalCost + 25,
+    newCardRemovalCost: shop.cardRemovalCost + 15,
   }
 }

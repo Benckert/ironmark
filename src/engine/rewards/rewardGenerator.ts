@@ -74,9 +74,9 @@ export function generateGoldReward(
 ): number {
   switch (nodeType) {
     case 'combat':
-      return rng.nextInt(10, 20)
+      return rng.nextInt(15, 25)
     case 'elite':
-      return rng.nextInt(20, 35)
+      return rng.nextInt(25, 40)
     case 'boss':
       return 50
     default:
