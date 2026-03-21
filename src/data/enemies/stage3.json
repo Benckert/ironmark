@@ -1,0 +1,151 @@
+[
+  {
+    "id": "enemy_s3_abyssal_fiend",
+    "name": "Abyssal Fiend",
+    "hp": 22,
+    "attack": 7,
+    "tier": 3,
+    "intents": [
+      { "type": "attack", "value": 7, "description": "Hellfire Slash for 7 damage" },
+      { "type": "debuff", "value": 3, "description": "Apply Burn 3", "effect": { "type": "apply_status", "value": 3, "statusType": "burn" } },
+      { "type": "attack", "value": 9, "description": "Abyssal Strike for 9 damage" },
+      { "type": "buff", "value": 3, "description": "Demonic Fury: Gain +3 Attack", "effect": { "type": "buff_attack", "value": 3 } }
+    ],
+    "keywords": ["burn", "fury"],
+    "artId": "art_abyssal_fiend"
+  },
+  {
+    "id": "enemy_s3_void_stalker",
+    "name": "Void Stalker",
+    "hp": 20,
+    "attack": 8,
+    "tier": 3,
+    "intents": [
+      { "type": "attack", "value": 8, "description": "Phase Strike for 8 damage" },
+      { "type": "attack", "value": 8, "description": "Phase Strike for 8 damage" },
+      { "type": "debuff", "value": 3, "description": "Apply Poison 3", "effect": { "type": "apply_status", "value": 3, "statusType": "poison" } },
+      { "type": "attack", "value": 10, "description": "Rift Rend for 10 damage" }
+    ],
+    "keywords": ["strike", "poison"],
+    "artId": "art_void_stalker"
+  },
+  {
+    "id": "enemy_s3_ancient_horror",
+    "name": "Ancient Horror",
+    "hp": 28,
+    "attack": 6,
+    "tier": 3,
+    "intents": [
+      { "type": "attack", "value": 6, "description": "Tendril Lash for 6 damage" },
+      { "type": "debuff", "value": 3, "description": "Apply Poison 3", "effect": { "type": "apply_status", "value": 3, "statusType": "poison" } },
+      { "type": "heal", "value": 6, "description": "Consume Flesh: Heal self for 6", "effect": { "type": "heal", "value": 6 } },
+      { "type": "attack", "value": 9, "description": "Crushing Grip for 9 damage" }
+    ],
+    "keywords": ["poison"],
+    "artId": "art_ancient_horror"
+  },
+  {
+    "id": "enemy_s3_doom_herald",
+    "name": "Doom Herald",
+    "hp": 24,
+    "attack": 7,
+    "tier": 3,
+    "intents": [
+      { "type": "attack", "value": 7, "description": "Doom Bolt for 7 damage" },
+      { "type": "buff", "value": 3, "description": "Herald's Call: Gain +3 Attack", "effect": { "type": "buff_attack", "value": 3 } },
+      { "type": "debuff", "value": 3, "description": "Apply Burn 3", "effect": { "type": "apply_status", "value": 3, "statusType": "burn" } },
+      { "type": "attack", "value": 10, "description": "Apocalypse Strike for 10 damage" }
+    ],
+    "keywords": ["burn"],
+    "artId": "art_doom_herald"
+  },
+  {
+    "id": "enemy_s3_soul_reaver",
+    "name": "Soul Reaver",
+    "hp": 20,
+    "attack": 9,
+    "tier": 3,
+    "intents": [
+      { "type": "attack", "value": 9, "description": "Soul Rip for 9 damage" },
+      { "type": "heal", "value": 5, "description": "Soul Feast: Heal self for 5", "effect": { "type": "heal", "value": 5 } },
+      { "type": "attack", "value": 9, "description": "Soul Rip for 9 damage" }
+    ],
+    "keywords": ["deathblow"],
+    "artId": "art_soul_reaver"
+  },
+  {
+    "id": "enemy_s3_blight_worm",
+    "name": "Blight Worm",
+    "hp": 26,
+    "attack": 6,
+    "tier": 3,
+    "intents": [
+      { "type": "attack", "value": 6, "description": "Corrosive Bite for 6 damage" },
+      { "type": "debuff", "value": 4, "description": "Apply Poison 4", "effect": { "type": "apply_status", "value": 4, "statusType": "poison" } },
+      { "type": "defend", "value": 5, "description": "Hardened Carapace: Gain 5 Armor", "effect": { "type": "armor", "value": 5 } },
+      { "type": "attack", "value": 8, "description": "Burrow Slam for 8 damage" }
+    ],
+    "keywords": ["poison"],
+    "artId": "art_blight_worm"
+  },
+  {
+    "id": "enemy_s3_infernal_invoker",
+    "name": "Infernal Invoker",
+    "hp": 18,
+    "attack": 8,
+    "tier": 3,
+    "intents": [
+      { "type": "attack", "value": 8, "description": "Infernal Bolt for 8 damage" },
+      { "type": "debuff", "value": 4, "description": "Apply Burn 4", "effect": { "type": "apply_status", "value": 4, "statusType": "burn" } },
+      { "type": "buff", "value": 2, "description": "Demonic Pact: Gain +2 Attack", "effect": { "type": "buff_attack", "value": 2 } },
+      { "type": "attack", "value": 10, "description": "Hellstorm for 10 damage" }
+    ],
+    "keywords": ["burn"],
+    "artId": "art_infernal_invoker"
+  },
+  {
+    "id": "enemy_s3_void_colossus",
+    "name": "Void Colossus",
+    "hp": 30,
+    "attack": 7,
+    "tier": 3,
+    "intents": [
+      { "type": "attack", "value": 7, "description": "Void Smash for 7 damage" },
+      { "type": "defend", "value": 6, "description": "Rift Armor: Gain 6 Armor", "effect": { "type": "armor", "value": 6 } },
+      { "type": "attack", "value": 10, "description": "Reality Crush for 10 damage" },
+      { "type": "buff", "value": 3, "description": "Void Empowerment: Gain +3 Attack", "effect": { "type": "buff_attack", "value": 3 } }
+    ],
+    "keywords": ["taunt"],
+    "artId": "art_void_colossus"
+  },
+  {
+    "id": "enemy_elite_s3_demon_prince",
+    "name": "Demon Prince",
+    "hp": 28,
+    "attack": 9,
+    "tier": 3,
+    "intents": [
+      { "type": "attack", "value": 9, "description": "Infernal Cleave for 9 damage" },
+      { "type": "debuff", "value": 3, "description": "Apply Burn 3", "effect": { "type": "apply_status", "value": 3, "statusType": "burn" } },
+      { "type": "buff", "value": 4, "description": "Demonic Ascension: Gain +4 Attack", "effect": { "type": "buff_attack", "value": 4 } },
+      { "type": "attack", "value": 12, "description": "Cataclysm for 12 damage" }
+    ],
+    "keywords": ["fury", "burn"],
+    "artId": "art_demon_prince"
+  },
+  {
+    "id": "enemy_elite_s3_entropy_weaver",
+    "name": "Entropy Weaver",
+    "hp": 25,
+    "attack": 8,
+    "tier": 3,
+    "intents": [
+      { "type": "attack", "value": 8, "description": "Entropy Bolt for 8 damage" },
+      { "type": "debuff", "value": 3, "description": "Apply Poison 3", "effect": { "type": "apply_status", "value": 3, "statusType": "poison" } },
+      { "type": "heal", "value": 6, "description": "Unravel Life: Heal self for 6", "effect": { "type": "heal", "value": 6 } },
+      { "type": "debuff", "value": 3, "description": "Apply Burn 3", "effect": { "type": "apply_status", "value": 3, "statusType": "burn" } }
+    ],
+    "keywords": ["poison", "burn"],
+    "artId": "art_entropy_weaver"
+  }
+]

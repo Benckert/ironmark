@@ -1,10 +1,11 @@
 import type { MapState, MapNode, MapEdge, NodeType } from '@engine/types/map.ts'
 import { SeededRNG } from '../../utils/random.ts'
 
-const ROW_COUNT = 6
+const ROWS_PER_STAGE: Record<number, number> = { 1: 6, 2: 7, 3: 8 }
 
-export function generateMap(seed: string): MapState {
-  const rng = new SeededRNG(seed + '_map')
+export function generateMap(seed: string, stage: number = 1): MapState {
+  const rng = new SeededRNG(seed + '_map_s' + stage)
+  const ROW_COUNT = ROWS_PER_STAGE[stage] ?? 6
 
   // Create start node
   const startNode: MapNode = {
@@ -27,7 +28,7 @@ export function generateMap(seed: string): MapState {
   }
 
   // Generate node types for each row
-  const nodeTypes = generateNodeTypes(rng)
+  const nodeTypes = generateNodeTypes(rng, ROW_COUNT, stage)
 
   // Create row nodes
   const allNodes: MapNode[] = [startNode]
@@ -106,6 +107,7 @@ export function generateMap(seed: string): MapState {
   })
 
   return {
+    stage,
     nodes: allNodes,
     edges: uniqueEdges,
     currentNodeId: 'start',
@@ -113,23 +115,27 @@ export function generateMap(seed: string): MapState {
   }
 }
 
-function generateNodeTypes(rng: SeededRNG): NodeType[] {
-  // Required distribution: 4 combat, 1 elite, 1 shop, 1 rest, 1-2 event
-  const required: NodeType[] = [
-    'combat', 'combat', 'combat', 'combat',
-    'elite', 'shop', 'rest', 'event',
-  ]
+function generateNodeTypes(rng: SeededRNG, rowCount: number, stage: number): NodeType[] {
+  // Base distribution varies by stage
+  const required: NodeType[] = stage === 1
+    ? ['combat', 'combat', 'combat', 'combat', 'elite', 'shop', 'rest', 'event']
+    : stage === 2
+      ? ['combat', 'combat', 'combat', 'elite', 'elite', 'shop', 'rest', 'event', 'event']
+      : ['combat', 'combat', 'elite', 'elite', 'elite', 'shop', 'rest', 'event', 'event']
 
-  // Fill remaining slots with combat or event
-  const extraTypes: NodeType[] = ['combat', 'event', 'combat']
+  // Fill remaining slots
+  const extraTypes: NodeType[] = stage === 1
+    ? ['combat', 'event', 'combat']
+    : stage === 2
+      ? ['combat', 'event', 'combat', 'combat']
+      : ['combat', 'event', 'combat', 'combat', 'event']
 
-  // Shuffle all available types
   const allTypes = rng.shuffle([...required, ...extraTypes])
 
   // Apply constraints
   const result: NodeType[] = []
 
-  for (let row = 0; row < ROW_COUNT; row++) {
+  for (let row = 0; row < rowCount; row++) {
     const rowTypes: NodeType[] = []
 
     for (let col = 0; col < 3; col++) {

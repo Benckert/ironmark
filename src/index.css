@@ -19,3 +19,16 @@ body {
   display: flex;
   flex-direction: column;
 }
+
+/* Minimum touch target size for mobile (44x44px) */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Prevent horizontal overflow on mobile */
+@media (max-width: 767px) {
+  html, body {
+    overflow-x: hidden;
+  }
+}

@@ -50,5 +50,60 @@
     "keywords": ["deathblow"],
     "statusOnDeath": { "type": "damage", "value": 3, "target": "hero" },
     "artId": "art_risen_skeleton"
+  },
+  {
+    "id": "boss_iron_warden",
+    "name": "The Iron Warden",
+    "hp": 45,
+    "attack": 8,
+    "tier": 3,
+    "intents": [
+      { "type": "attack", "value": 8, "description": "Iron Fist for 8 damage" },
+      { "type": "defend", "value": 8, "description": "Fortress Protocol: Gain 8 Armor", "effect": { "type": "armor", "value": 8 } },
+      { "type": "attack", "value": 10, "description": "Piston Barrage for 10 damage" },
+      { "type": "debuff", "value": 3, "description": "Grinding Gears: Apply Burn 3", "effect": { "type": "apply_status", "value": 3, "statusType": "burn" } }
+    ],
+    "keywords": ["ward"],
+    "passive": {
+      "name": "Ironclad",
+      "description": "The Iron Warden starts each turn with 3 Armor."
+    },
+    "phase2": {
+      "hpThreshold": 22,
+      "intents": [
+        { "type": "attack", "value": 12, "description": "Overdrive Slam for 12 damage" },
+        { "type": "buff", "value": 4, "description": "Overclock: Gain +4 Attack", "effect": { "type": "buff_attack", "value": 4 } },
+        { "type": "attack", "value": 14, "description": "Meltdown Strike for 14 damage" }
+      ]
+    },
+    "artId": "art_iron_warden"
+  },
+  {
+    "id": "boss_void_sovereign",
+    "name": "The Void Sovereign",
+    "hp": 60,
+    "attack": 10,
+    "tier": 3,
+    "intents": [
+      { "type": "attack", "value": 10, "description": "Void Rend for 10 damage" },
+      { "type": "debuff", "value": 4, "description": "Entropy Curse: Apply Poison 4", "effect": { "type": "apply_status", "value": 4, "statusType": "poison" } },
+      { "type": "defend", "value": 6, "description": "Reality Warp: Gain 6 Armor", "effect": { "type": "armor", "value": 6 } },
+      { "type": "attack", "value": 12, "description": "Annihilation Beam for 12 damage" }
+    ],
+    "keywords": ["ward"],
+    "passive": {
+      "name": "Void Siphon",
+      "description": "Whenever the hero plays a card, The Void Sovereign heals 1 HP."
+    },
+    "phase2": {
+      "hpThreshold": 30,
+      "intents": [
+        { "type": "attack", "value": 14, "description": "Oblivion Strike for 14 damage" },
+        { "type": "debuff", "value": 4, "description": "Reality Collapse: Apply Burn 4", "effect": { "type": "apply_status", "value": 4, "statusType": "burn" } },
+        { "type": "buff", "value": 5, "description": "Ascend Beyond: Gain +5 Attack", "effect": { "type": "buff_attack", "value": 5 } },
+        { "type": "attack", "value": 16, "description": "Erasure for 16 damage" }
+      ]
+    },
+    "artId": "art_void_sovereign"
   }
 ]

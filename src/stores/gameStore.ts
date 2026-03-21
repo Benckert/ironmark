@@ -5,17 +5,20 @@ import type { MapNode } from '@engine/types/map.ts'
 import type { EventDefinition } from '@engine/types/event.ts'
 import type { ShopInventory } from '@engine/rewards/shopGenerator.ts'
 import type { EventResult } from '@engine/events/eventEngine.ts'
-import { getHeroById, getStarterDeck, getAllCards, getAllGear } from '@data/dataLoader.ts'
+import { getHeroById, getStarterDeck } from '@data/dataLoader.ts'
 import { generateMap, navigateToNode } from '@engine/map/mapGenerator.ts'
-import { generateRelicReward, calculateRerollCost } from '@engine/rewards/rewardGenerator.ts'
-import { generateShop, buyCard, buyGear, buyCardRemoval } from '@engine/rewards/shopGenerator.ts'
-import { selectEvent, resolveChoice } from '@engine/events/eventEngine.ts'
-import { generateRunStartOptions } from '@engine/run/runStartGamble.ts'
-import { removeCardFromDeck, upgradeCard } from '@engine/cards/deckManager.ts'
-import { equipGear } from '@engine/cards/gearManager.ts'
+import { generateShop } from '@engine/rewards/shopGenerator.ts'
+import { selectEvent } from '@engine/events/eventEngine.ts'
+import { generateRunStartOptions, applyGambleOption } from '@engine/run/runStartGamble.ts'
 import { SeededRNG } from '../utils/random.ts'
 import { saveActiveRun, loadActiveRun, clearActiveRun, saveRunHistory } from '../db/database.ts'
 import type { RunHistoryEntry } from '@engine/types/run.ts'
+import {
+  createRewardActions,
+  createShopActions,
+  createRestActions,
+  createEventActions,
+} from './nodeActions.ts'
 
 interface GameStore {
   run: RunState | null
@@ -25,7 +28,6 @@ interface GameStore {
   visitedEventIds: string[]
   shopRerollCount: number
 
-  // Navigation
   startNewRun: () => void
   selectHero: (heroId: string) => void
   generateGambleOptions: () => void
@@ -33,10 +35,8 @@ interface GameStore {
   navigateToMapNode: (node: MapNode) => void
   returnToMap: () => void
 
-  // Combat integration
   onCombatEnd: (result: 'victory' | 'defeat', finalHp?: number, combatStats?: { turnsPlayed: number; damageDealt: number; damageReceived: number; cardsPlayed: number; enemiesKilled: number }) => void
 
-  // Rewards
   selectRewardCard: (card: Card) => void
   skipRewardCards: () => void
   rerollRewards: () => void
@@ -44,32 +44,27 @@ interface GameStore {
   skipGear: () => void
   continueFromReward: () => void
 
-  // Shop
   shopBuyCard: (index: number) => void
   shopBuyGear: (index: number) => void
   shopRemoveCard: (cardId: string) => void
   shopReroll: () => void
   leaveShop: () => void
 
-  // Rest
   restHeal: () => void
   restUpgrade: (cardId: string) => void
   restRemove: (cardId: string) => void
 
-  // Events
   eventChoose: (choiceIndex: number) => EventResult
   eventContinue: () => void
 
-  // End
+  advanceStage: () => void
   endRun: (result: 'victory' | 'defeat') => void
   goToMainMenu: () => void
 
-  // Persistence
   autoSave: () => void
   loadSavedRun: () => Promise<boolean>
   hasSavedRun: boolean
 
-  // Helpers
   getRng: (context: string) => SeededRNG
 }
 
@@ -77,6 +72,7 @@ function createEmptyRun(seed: string): RunState {
   return {
     seed,
     phase: 'hero_select',
+    stage: 1,
     hero: null,
     hp: 0,
     maxHp: 0,
@@ -105,491 +101,269 @@ function createEmptyRun(seed: string): RunState {
   }
 }
 
-export const useGameStore = create<GameStore>((set, get) => ({
-  run: null,
-  shop: null,
-  currentEvent: null,
-  runStartOptions: null,
-  visitedEventIds: [],
-  shopRerollCount: 0,
-  hasSavedRun: false,
+export const useGameStore = create<GameStore>((set, get) => {
+  const accessors = {
+    getRun: () => get().run,
+    getShop: () => get().shop,
+    getCurrentEvent: () => get().currentEvent,
+    getShopRerollCount: () => get().shopRerollCount,
+    setRun: (run: RunState) => set({ run }),
+    setShop: (shop: ShopInventory | null) => set({ shop }),
+    setShopRerollCount: (count: number) => set({ shopRerollCount: count }),
+    getRng: (context: string) => {
+      const run = get().run
+      const seed = run?.seed ?? 'fallback'
+      return new SeededRNG(seed + '_' + context)
+    },
+    returnToMap: () => {
+      const run = get().run
+      if (!run) return
+      set({ run: { ...run, phase: 'map' }, shop: null, currentEvent: null })
+      get().autoSave()
+    },
+  }
 
-  startNewRun: () => {
-    const seed = 'run-' + Date.now() + '-' + Math.floor(Math.random() * 10000)
-    set({
-      run: createEmptyRun(seed),
-      shop: null,
-      currentEvent: null,
-      runStartOptions: null,
-      visitedEventIds: [],
-      shopRerollCount: 0,
-    })
-  },
+  const rewardActions = createRewardActions(accessors)
+  const shopActions = createShopActions(accessors)
+  const restActions = createRestActions(accessors)
+  const eventActions = createEventActions(accessors)
 
-  selectHero: (heroId: string) => {
-    const { run } = get()
-    if (!run) return
-    const hero = getHeroById(heroId)
-    if (!hero) return
-    const deck = getStarterDeck(heroId)
+  return {
+    run: null,
+    shop: null,
+    currentEvent: null,
+    runStartOptions: null,
+    visitedEventIds: [],
+    shopRerollCount: 0,
+    hasSavedRun: false,
 
-    set({
-      run: {
-        ...run,
-        hero,
-        hp: hero.startingHp,
-        maxHp: hero.startingHp,
-        deck,
-        phase: 'run_start_gamble',
-      },
-    })
-  },
-
-  generateGambleOptions: () => {
-    const { run } = get()
-    if (!run) return
-    const rng = get().getRng('gamble')
-    set({ runStartOptions: generateRunStartOptions(rng) })
-  },
-
-  selectGambleOption: (option: RunStartOption) => {
-    const { run } = get()
-    if (!run || !run.hero) return
-    const rng = get().getRng('gamble_apply')
-    let updatedRun = { ...run }
-
-    switch (option.apply) {
-      case 'gold':
-        updatedRun.gold += option.value ?? 50
-        updatedRun.stats = { ...updatedRun.stats, goldEarned: updatedRun.stats.goldEarned + (option.value ?? 50) }
-        break
-      case 'remove_starter': {
-        const starters = updatedRun.deck.filter((c) => c.id.includes('starter'))
-        if (starters.length > 0) {
-          const toRemove = rng.pick(starters)
-          updatedRun.deck = removeCardFromDeck(updatedRun.deck, toRemove.id)
-        }
-        break
-      }
-      case 'max_hp':
-        updatedRun.maxHp += option.value ?? 3
-        updatedRun.hp += option.value ?? 3
-        break
-      case 'add_card': {
-        const commons = getAllCards().filter((c) => c.rarity === 'common' && !c.id.includes('starter'))
-        if (commons.length > 0) {
-          updatedRun.deck = [...updatedRun.deck, rng.pick(commons)]
-        }
-        break
-      }
-      case 'uncommon_card_lose_hp': {
-        const uncommons = getAllCards().filter((c) => c.rarity === 'uncommon')
-        if (uncommons.length > 0) {
-          updatedRun.deck = [...updatedRun.deck, rng.pick(uncommons)]
-        }
-        updatedRun.hp = Math.max(1, updatedRun.hp - (option.value ?? 5))
-        break
-      }
-      case 'gold_and_curse':
-        updatedRun.gold += option.value ?? 40
-        updatedRun.stats = { ...updatedRun.stats, goldEarned: updatedRun.stats.goldEarned + (option.value ?? 40) }
-        // Curse: for MVP, just a minor penalty acknowledged
-        break
-      case 'random_gear': {
-        const gear = getAllGear()
-        if (gear.length > 0) {
-          const picked = rng.pick(gear)
-          const equipped = equipGear(updatedRun.equippedGear, [...updatedRun.gearInventory, picked], picked)
-          updatedRun.gearInventory = equipped.gearInventory
-          updatedRun.equippedGear = equipped.equippedGear
-        }
-        break
-      }
-      case 'random_relic': {
-        const relic = generateRelicReward(rng)
-        updatedRun.relics = [...updatedRun.relics, relic]
-        break
-      }
-      case 'transform_deck': {
-        const allCards = getAllCards().filter((c) => !c.id.includes('starter'))
-        const newDeck: Card[] = []
-        for (let i = 0; i < updatedRun.deck.length; i++) {
-          if (allCards.length > 0) {
-            newDeck.push(rng.pick(allCards))
-          }
-        }
-        updatedRun.deck = newDeck
-        break
-      }
-      case 'rare_card_lose_max_hp': {
-        const rares = getAllCards().filter((c) => c.rarity === 'rare')
-        if (rares.length > 0) {
-          updatedRun.deck = [...updatedRun.deck, rng.pick(rares)]
-        }
-        updatedRun.gold += 30
-        updatedRun.maxHp = Math.max(1, updatedRun.maxHp - (option.value ?? 8))
-        updatedRun.hp = Math.min(updatedRun.hp, updatedRun.maxHp)
-        break
-      }
-    }
-
-    // Generate map and transition
-    const map = generateMap(run.seed)
-    updatedRun.map = map
-    updatedRun.currentNodeId = 'start'
-    updatedRun.phase = 'map'
-
-    set({ run: updatedRun, runStartOptions: null })
-  },
-
-  navigateToMapNode: (node: MapNode) => {
-    const { run } = get()
-    if (!run || !run.map) return
-
-    const newMap = navigateToNode(run.map, node.id)
-    if (!newMap) return
-
-    const updatedRun: RunState = {
-      ...run,
-      map: newMap,
-      currentNodeId: node.id,
-      stats: { ...run.stats, nodesVisited: run.stats.nodesVisited + 1 },
-    }
-
-    // Determine phase based on node type
-    switch (node.type) {
-      case 'combat':
-      case 'elite':
-        updatedRun.phase = 'combat'
-        break
-      case 'boss':
-        updatedRun.phase = 'boss'
-        break
-      case 'shop':
-        updatedRun.phase = 'shop'
-        break
-      case 'rest':
-        updatedRun.phase = 'rest'
-        break
-      case 'event':
-        updatedRun.phase = 'event'
-        break
-      default:
-        updatedRun.phase = 'map'
-    }
-
-    set({ run: updatedRun })
-
-    // Set up shop if needed
-    if (node.type === 'shop' && run.hero) {
-      const rng = get().getRng('shop_' + node.id)
-      const shop = generateShop(run.hero.faction, run.cardRemovalCount, get().shopRerollCount, rng)
-      set({ shop })
-    }
-
-    // Set up event if needed
-    if (node.type === 'event') {
-      const rng = get().getRng('event_' + node.id)
-      const event = selectEvent(rng, get().visitedEventIds)
+    startNewRun: () => {
+      const seed = 'run-' + Date.now() + '-' + Math.floor(Math.random() * 10000)
       set({
-        currentEvent: event,
-        visitedEventIds: [...get().visitedEventIds, event.id],
+        run: createEmptyRun(seed),
+        shop: null,
+        currentEvent: null,
+        runStartOptions: null,
+        visitedEventIds: [],
+        shopRerollCount: 0,
       })
-    }
-  },
+    },
 
-  returnToMap: () => {
-    const { run } = get()
-    if (!run) return
-    set({ run: { ...run, phase: 'map' }, shop: null, currentEvent: null })
-    // Auto-save when returning to map
-    get().autoSave()
-  },
+    selectHero: (heroId: string) => {
+      const { run } = get()
+      if (!run) return
+      const hero = getHeroById(heroId)
+      if (!hero) return
+      const deck = getStarterDeck(heroId)
 
-  onCombatEnd: (result: 'victory' | 'defeat', finalHp?: number, combatStats?: { turnsPlayed: number; damageDealt: number; damageReceived: number; cardsPlayed: number; enemiesKilled: number }) => {
-    const { run } = get()
-    if (!run) return
-
-    // Sync HP and stats from combat back to run state
-    const updatedRun: RunState = {
-      ...run,
-      hp: finalHp ?? run.hp,
-      stats: combatStats ? {
-        ...run.stats,
-        turnsPlayed: run.stats.turnsPlayed + combatStats.turnsPlayed,
-        damageDealt: run.stats.damageDealt + combatStats.damageDealt,
-        damageReceived: run.stats.damageReceived + combatStats.damageReceived,
-        cardsPlayed: run.stats.cardsPlayed + combatStats.cardsPlayed,
-        enemiesKilled: run.stats.enemiesKilled + combatStats.enemiesKilled,
-      } : run.stats,
-    }
-
-    if (result === 'defeat') {
-      set({ run: { ...updatedRun, phase: 'defeat' } })
-      return
-    }
-
-    // Victory — check if it was boss
-    const currentNode = run.map?.nodes.find((n) => n.id === run.currentNodeId)
-    if (currentNode?.type === 'boss') {
-      set({ run: { ...updatedRun, phase: 'victory' } })
-      return
-    }
-
-    // Regular combat/elite victory — go to reward
-    set({ run: { ...updatedRun, phase: 'reward' } })
-  },
-
-  selectRewardCard: (card: Card) => {
-    const { run } = get()
-    if (!run) return
-    set({ run: { ...run, deck: [...run.deck, card] } })
-  },
-
-  skipRewardCards: () => {
-    // No state change needed
-  },
-
-  rerollRewards: () => {
-    const { run } = get()
-    if (!run || !run.hero) return
-    const cost = calculateRerollCost(run.rerollCount)
-    if (run.gold < cost) return
-
-    set({
-      run: {
-        ...run,
-        gold: run.gold - cost,
-        rerollCount: run.rerollCount + 1,
-        stats: { ...run.stats, goldSpent: run.stats.goldSpent + cost },
-      },
-    })
-  },
-
-  takeGear: (gear: GearCard) => {
-    const { run } = get()
-    if (!run) return
-    const equipped = equipGear(run.equippedGear, [...run.gearInventory, gear], gear)
-    set({ run: { ...run, gearInventory: equipped.gearInventory, equippedGear: equipped.equippedGear } })
-  },
-
-  skipGear: () => {
-    // No state change needed
-  },
-
-  continueFromReward: () => {
-    get().returnToMap()
-  },
-
-  shopBuyCard: (index: number) => {
-    const { run, shop } = get()
-    if (!run || !shop) return
-    const result = buyCard(shop, index, run.gold)
-    if (!result) return
-    set({
-      run: {
-        ...run,
-        gold: result.newGold,
-        deck: [...run.deck, result.card],
-        stats: { ...run.stats, goldSpent: run.stats.goldSpent + (run.gold - result.newGold) },
-      },
-      shop: result.shop,
-    })
-  },
-
-  shopBuyGear: (index: number) => {
-    const { run, shop } = get()
-    if (!run || !shop) return
-    const result = buyGear(shop, index, run.gold)
-    if (!result) return
-    const equipped = equipGear(run.equippedGear, [...run.gearInventory, result.gear], result.gear)
-    set({
-      run: {
-        ...run,
-        gold: result.newGold,
-        gearInventory: equipped.gearInventory,
-        equippedGear: equipped.equippedGear,
-        stats: { ...run.stats, goldSpent: run.stats.goldSpent + (run.gold - result.newGold) },
-      },
-      shop: result.shop,
-    })
-  },
-
-  shopRemoveCard: (cardId: string) => {
-    const { run, shop } = get()
-    if (!run || !shop) return
-    const result = buyCardRemoval(shop, run.gold)
-    if (!result) return
-    set({
-      run: {
-        ...run,
-        gold: result.newGold,
-        deck: removeCardFromDeck(run.deck, cardId),
-        cardRemovalCount: run.cardRemovalCount + 1,
-        stats: { ...run.stats, goldSpent: run.stats.goldSpent + (run.gold - result.newGold) },
-      },
-      shop: { ...shop, cardRemovalCost: result.newCardRemovalCost },
-    })
-  },
-
-  shopReroll: () => {
-    const { run, shop } = get()
-    if (!run || !shop || !run.hero || run.gold < shop.rerollCost) return
-
-    const newShopRerollCount = get().shopRerollCount + 1
-    const cost = shop.rerollCost
-    const rng = get().getRng('shop_reroll_' + newShopRerollCount)
-    const newShop = generateShop(run.hero.faction, run.cardRemovalCount, newShopRerollCount, rng)
-
-    set({
-      run: {
-        ...run,
-        gold: run.gold - cost,
-        stats: { ...run.stats, goldSpent: run.stats.goldSpent + cost },
-      },
-      shop: newShop,
-      shopRerollCount: newShopRerollCount,
-    })
-  },
-
-  leaveShop: () => {
-    get().returnToMap()
-  },
-
-  restHeal: () => {
-    const { run } = get()
-    if (!run) return
-    const healAmount = Math.floor(run.maxHp * 0.3)
-    const newHp = Math.min(run.hp + healAmount, run.maxHp)
-    set({ run: { ...run, hp: newHp } })
-  },
-
-  restUpgrade: (cardId: string) => {
-    const { run } = get()
-    if (!run) return
-    const newDeck = upgradeCard(run.deck, cardId)
-    set({ run: { ...run, deck: newDeck } })
-  },
-
-  restRemove: (cardId: string) => {
-    const { run } = get()
-    if (!run) return
-    set({ run: { ...run, deck: removeCardFromDeck(run.deck, cardId) } })
-  },
-
-  eventChoose: (choiceIndex: number): EventResult => {
-    const { run, currentEvent } = get()
-    if (!run || !currentEvent || !run.hero) {
-      return {
-        hpDelta: 0, maxHpDelta: 0, goldDelta: 0,
-        addedCards: [], addedGear: [],
-        addCurse: false, extraEnemy: false, revealMap: false, skipNode: false,
-        outcomeDescription: 'Error',
-      }
-    }
-    const rng = get().getRng('event_choice')
-    const result = resolveChoice(currentEvent, choiceIndex, run.hero.faction, rng)
-
-    // Apply effects to run state
-    const newHp = Math.max(1, Math.min(run.hp + result.hpDelta, run.maxHp + result.maxHpDelta))
-    const newMaxHp = Math.max(1, run.maxHp + result.maxHpDelta)
-    const newGold = Math.max(0, run.gold + result.goldDelta)
-
-    // Auto-equip any gear gained from events
-    let updatedGearInventory = [...run.gearInventory]
-    let updatedEquippedGear = [...run.equippedGear]
-    for (const gear of result.addedGear) {
-      const equipped = equipGear(updatedEquippedGear, [...updatedGearInventory, gear], gear)
-      updatedEquippedGear = equipped.equippedGear
-      updatedGearInventory = equipped.gearInventory
-    }
-
-    set({
-      run: {
-        ...run,
-        hp: newHp,
-        maxHp: newMaxHp,
-        gold: newGold,
-        deck: [...run.deck, ...result.addedCards],
-        gearInventory: updatedGearInventory,
-        equippedGear: updatedEquippedGear,
-        stats: {
-          ...run.stats,
-          goldEarned: run.stats.goldEarned + Math.max(0, result.goldDelta),
-          goldSpent: run.stats.goldSpent + Math.max(0, -result.goldDelta),
+      set({
+        run: {
+          ...run,
+          hero,
+          hp: hero.startingHp,
+          maxHp: hero.startingHp,
+          deck,
+          phase: 'run_start_gamble',
         },
-      },
-    })
+      })
+    },
 
-    return result
-  },
+    generateGambleOptions: () => {
+      const { run } = get()
+      if (!run) return
+      const rng = accessors.getRng('gamble')
+      set({ runStartOptions: generateRunStartOptions(rng) })
+    },
 
-  eventContinue: () => {
-    get().returnToMap()
-  },
+    selectGambleOption: (option: RunStartOption) => {
+      const { run } = get()
+      if (!run || !run.hero) return
+      const rng = accessors.getRng('gamble_apply')
+      const updatedRun = applyGambleOption({ ...run }, option, rng)
 
-  endRun: (result: 'victory' | 'defeat') => {
-    const { run } = get()
-    if (!run) return
+      const map = generateMap(run.seed, run.stage)
+      updatedRun.map = map
+      updatedRun.currentNodeId = 'start'
+      updatedRun.phase = 'map'
 
-    // Save to run history
-    const entry: RunHistoryEntry = {
-      id: run.seed + '_' + Date.now(),
-      timestamp: Date.now(),
-      seed: run.seed,
-      heroId: run.hero?.id ?? 'unknown',
-      result,
-      stats: run.stats,
-      finalDeck: run.deck.map((c) => c.id),
-      finalGear: run.gearInventory.map((g) => g.id),
-      nodesVisited: run.stats.nodesVisited,
-    }
-    saveRunHistory(entry).catch(() => {})
-    clearActiveRun().catch(() => {})
-  },
+      set({ run: updatedRun, runStartOptions: null })
+    },
 
-  goToMainMenu: () => {
-    const { run } = get()
-    // If run ended (victory/defeat), clear save
-    if (run && (run.phase === 'victory' || run.phase === 'defeat')) {
-      get().endRun(run.phase === 'victory' ? 'victory' : 'defeat')
-    }
-    set({
-      run: null,
-      shop: null,
-      currentEvent: null,
-      runStartOptions: null,
-      visitedEventIds: [],
-      shopRerollCount: 0,
-      hasSavedRun: false,
-    })
-  },
+    navigateToMapNode: (node: MapNode) => {
+      const { run } = get()
+      if (!run || !run.map) return
 
-  autoSave: () => {
-    const { run } = get()
-    if (!run) return
-    const json = JSON.stringify(run)
-    saveActiveRun(json).catch(() => {})
-  },
+      const newMap = navigateToNode(run.map, node.id)
+      if (!newMap) return
 
-  loadSavedRun: async (): Promise<boolean> => {
-    const json = await loadActiveRun()
-    if (!json) return false
-    try {
-      const run = JSON.parse(json) as RunState
-      set({ run, hasSavedRun: false })
-      return true
-    } catch {
-      return false
-    }
-  },
+      const updatedRun: RunState = {
+        ...run,
+        map: newMap,
+        currentNodeId: node.id,
+        stats: { ...run.stats, nodesVisited: run.stats.nodesVisited + 1 },
+      }
 
-  getRng: (context: string): SeededRNG => {
-    const { run } = get()
-    const seed = run?.seed ?? 'fallback'
-    return new SeededRNG(seed + '_' + context)
-  },
-}))
+      switch (node.type) {
+        case 'combat':
+        case 'elite':
+          updatedRun.phase = 'combat'
+          break
+        case 'boss':
+          updatedRun.phase = 'boss'
+          break
+        case 'shop':
+          updatedRun.phase = 'shop'
+          break
+        case 'rest':
+          updatedRun.phase = 'rest'
+          break
+        case 'event':
+          updatedRun.phase = 'event'
+          break
+        default:
+          updatedRun.phase = 'map'
+      }
+
+      set({ run: updatedRun })
+
+      if (node.type === 'shop' && run.hero) {
+        const rng = accessors.getRng('shop_' + node.id)
+        const shop = generateShop(run.hero.faction, run.cardRemovalCount, get().shopRerollCount, rng)
+        set({ shop })
+      }
+
+      if (node.type === 'event') {
+        const rng = accessors.getRng('event_' + node.id)
+        const event = selectEvent(rng, get().visitedEventIds, run.stage)
+        set({
+          currentEvent: event,
+          visitedEventIds: [...get().visitedEventIds, event.id],
+        })
+      }
+    },
+
+    returnToMap: accessors.returnToMap,
+
+    onCombatEnd: (result, finalHp, combatStats) => {
+      const { run } = get()
+      if (!run) return
+
+      const updatedRun: RunState = {
+        ...run,
+        hp: finalHp ?? run.hp,
+        stats: combatStats ? {
+          ...run.stats,
+          turnsPlayed: run.stats.turnsPlayed + combatStats.turnsPlayed,
+          damageDealt: run.stats.damageDealt + combatStats.damageDealt,
+          damageReceived: run.stats.damageReceived + combatStats.damageReceived,
+          cardsPlayed: run.stats.cardsPlayed + combatStats.cardsPlayed,
+          enemiesKilled: run.stats.enemiesKilled + combatStats.enemiesKilled,
+        } : run.stats,
+      }
+
+      if (result === 'defeat') {
+        set({ run: { ...updatedRun, phase: 'defeat' } })
+        return
+      }
+
+      const currentNode = run.map?.nodes.find((n) => n.id === run.currentNodeId)
+      if (currentNode?.type === 'boss') {
+        if (run.stage < 3) {
+          // Advance to next stage
+          set({ run: { ...updatedRun, phase: 'stage_transition' } })
+        } else {
+          set({ run: { ...updatedRun, phase: 'victory' } })
+        }
+        return
+      }
+
+      set({ run: { ...updatedRun, phase: 'reward' } })
+    },
+
+    ...rewardActions,
+    ...shopActions,
+    ...restActions,
+    ...eventActions,
+
+    advanceStage: () => {
+      const { run } = get()
+      if (!run || run.stage >= 3) return
+
+      const nextStage = run.stage + 1
+      const map = generateMap(run.seed, nextStage)
+      set({
+        run: {
+          ...run,
+          stage: nextStage,
+          map,
+          currentNodeId: 'start',
+          phase: 'map',
+        },
+        shop: null,
+        currentEvent: null,
+        visitedEventIds: [],
+        shopRerollCount: 0,
+      })
+      get().autoSave()
+    },
+
+    endRun: (result: 'victory' | 'defeat') => {
+      const { run } = get()
+      if (!run) return
+
+      const entry: RunHistoryEntry = {
+        id: run.seed + '_' + Date.now(),
+        timestamp: Date.now(),
+        seed: run.seed,
+        heroId: run.hero?.id ?? 'unknown',
+        result,
+        stats: run.stats,
+        finalDeck: run.deck.map((c) => c.id),
+        finalGear: run.gearInventory.map((g) => g.id),
+        nodesVisited: run.stats.nodesVisited,
+      }
+      saveRunHistory(entry).catch(() => {})
+      clearActiveRun().catch(() => {})
+    },
+
+    goToMainMenu: () => {
+      const { run } = get()
+      if (run && (run.phase === 'victory' || run.phase === 'defeat')) {
+        get().endRun(run.phase === 'victory' ? 'victory' : 'defeat')
+      }
+      set({
+        run: null,
+        shop: null,
+        currentEvent: null,
+        runStartOptions: null,
+        visitedEventIds: [],
+        shopRerollCount: 0,
+        hasSavedRun: false,
+      })
+    },
+
+    autoSave: () => {
+      const { run } = get()
+      if (!run) return
+      const json = JSON.stringify(run)
+      saveActiveRun(json).catch(() => {})
+    },
+
+    loadSavedRun: async (): Promise<boolean> => {
+      const json = await loadActiveRun()
+      if (!json) return false
+      try {
+        const run = JSON.parse(json) as RunState
+        set({ run, hasSavedRun: false })
+        return true
+      } catch {
+        return false
+      }
+    },
+
+    getRng: accessors.getRng,
+  }
+})
 
 // Check for saved run on module load
 loadActiveRun().then((data) => {

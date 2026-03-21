@@ -1,25 +1,27 @@
-import { useEffect } from 'react'
+import { useEffect, lazy, Suspense, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useGameStore } from '@stores/gameStore.ts'
 import { useCombatStore } from '@stores/combatStore.ts'
 import { buildEncounter } from '@engine/encounters/encounterBuilder.ts'
-import { getAllBosses } from '@data/dataLoader.ts'
+import { getBossByStage } from '@data/dataLoader.ts'
 import { generateCardRewards, generateGoldReward, generateGearReward, calculateRerollCost, canAffordReroll } from '@engine/rewards/rewardGenerator.ts'
 import { SeededRNG } from './utils/random.ts'
-import MainMenu from '@components/screens/MainMenu.tsx'
-import HeroSelect from '@components/screens/HeroSelect.tsx'
-import RunStartGamble from '@components/screens/RunStartGamble.tsx'
-import MapScreen from '@components/screens/MapScreen.tsx'
-import CombatScreen from '@components/screens/CombatScreen.tsx'
-import RewardScreen from '@components/screens/RewardScreen.tsx'
-import ShopScreen from '@components/screens/ShopScreen.tsx'
-import RestScreen from '@components/screens/RestScreen.tsx'
-import EventScreen from '@components/screens/EventScreen.tsx'
-import VictoryScreen from '@components/screens/VictoryScreen.tsx'
-import DefeatScreen from '@components/screens/DefeatScreen.tsx'
 import type { Card, GearCard } from '@engine/types/card.ts'
 import type { EnemyTemplate } from '@engine/types/enemy.ts'
-import { useState } from 'react'
+import { useAudioInit } from './hooks/useAudio.ts'
+
+const MainMenu = lazy(() => import('@components/screens/MainMenu.tsx'))
+const HeroSelect = lazy(() => import('@components/screens/HeroSelect.tsx'))
+const RunStartGamble = lazy(() => import('@components/screens/RunStartGamble.tsx'))
+const MapScreen = lazy(() => import('@components/screens/MapScreen.tsx'))
+const CombatScreen = lazy(() => import('@components/screens/CombatScreen.tsx'))
+const RewardScreen = lazy(() => import('@components/screens/RewardScreen.tsx'))
+const ShopScreen = lazy(() => import('@components/screens/ShopScreen.tsx'))
+const RestScreen = lazy(() => import('@components/screens/RestScreen.tsx'))
+const EventScreen = lazy(() => import('@components/screens/EventScreen.tsx'))
+const VictoryScreen = lazy(() => import('@components/screens/VictoryScreen.tsx'))
+const DefeatScreen = lazy(() => import('@components/screens/DefeatScreen.tsx'))
+const StageTransitionScreen = lazy(() => import('@components/screens/StageTransitionScreen.tsx'))
 
 function App() {
   const run = useGameStore((s) => s.run)
@@ -36,6 +38,8 @@ function App() {
   const goToMainMenu = useGameStore((s) => s.goToMainMenu)
 
   const initCombat = useCombatStore((s) => s.initCombat)
+
+  useAudioInit()
 
   const phase = run?.phase ?? 'main_menu'
 
@@ -56,11 +60,11 @@ function App() {
 
     let enemies: EnemyTemplate[]
     if (phase === 'boss') {
-      const bosses = getAllBosses()
-      enemies = bosses.length > 0 ? [bosses[0]] : []
+      const boss = getBossByStage(run.stage)
+      enemies = boss ? [boss] : []
     } else {
       const rng = new SeededRNG(run.seed + '_encounter_' + run.currentNodeId)
-      enemies = buildEncounter(currentNode.row, currentNode.type, rng)
+      enemies = buildEncounter(currentNode.row, currentNode.type, rng, run.stage)
     }
 
     if (enemies.length > 0) {
@@ -141,6 +145,17 @@ function App() {
         />
       )
     }
+    if (phase === 'stage_transition') {
+      return (
+        <StageTransitionScreen
+          completedStage={run.stage}
+          hp={run.hp}
+          maxHp={run.maxHp}
+          gold={run.gold}
+          onContinue={useGameStore.getState().advanceStage}
+        />
+      )
+    }
     if (phase === 'victory') {
       return (
         <VictoryScreen
@@ -164,17 +179,19 @@ function App() {
   })()
 
   return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={phase}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.2 }}
-      >
-        {screenContent}
-      </motion.div>
-    </AnimatePresence>
+    <Suspense fallback={<div className="flex items-center justify-center h-screen text-gray-400">Loading...</div>}>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={phase}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          {screenContent}
+        </motion.div>
+      </AnimatePresence>
+    </Suspense>
   )
 }
 

@@ -1,15 +1,16 @@
 import type { EventDefinition, EventEffect } from '@engine/types/event.ts'
 import type { Card, Faction, GearCard, Rarity } from '@engine/types/card.ts'
 import { SeededRNG } from '../../utils/random.ts'
-import { getAllEvents, getAllCards, getAllGear } from '@data/dataLoader.ts'
+import { getEventsByStage, getAllCards, getAllGear } from '@data/dataLoader.ts'
 
 export function selectEvent(
   rng: SeededRNG,
   visitedEventIds: string[],
+  stage: number = 1,
 ): EventDefinition {
-  const allEvents = getAllEvents()
-  const unvisited = allEvents.filter((e) => !visitedEventIds.includes(e.id))
-  const pool = unvisited.length > 0 ? unvisited : allEvents
+  const stageEvents = getEventsByStage(stage)
+  const unvisited = stageEvents.filter((e) => !visitedEventIds.includes(e.id))
+  const pool = unvisited.length > 0 ? unvisited : stageEvents
   return rng.pick(pool)
 }
 

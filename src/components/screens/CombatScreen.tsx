@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { useCombatStore } from '@stores/combatStore.ts'
 import { extractCombatStats } from '@engine/combat/combatEngine.ts'
 import EnemyDisplay from '../combat/EnemyDisplay.tsx'
@@ -25,6 +25,17 @@ export default function CombatScreen({ onCombatEnd }: CombatScreenProps) {
   const initialEnemyCount = useRef(0)
   const { popups, addPopup } = useDamagePopups()
   const prevLogLength = useRef(0)
+
+  const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      selectCard(null)
+    }
+  }, [selectCard])
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [handleKeyDown])
 
   // Show damage/heal popups when combat log changes
   useEffect(() => {
@@ -77,11 +88,18 @@ export default function CombatScreen({ onCombatEnd }: CombatScreenProps) {
   const allCards = [...combat.drawPile, ...combat.hand, ...combat.discardPile]
 
   return (
-    <div className="relative flex flex-col h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+    <div className="relative flex flex-col h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950" role="main" aria-label="Combat screen">
+      {/* Aria-live region for combat announcements */}
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        Turn {combat.turn}, {combat.phase.replace('_', ' ')} phase.
+        {combat.result !== 'ongoing' ? ` Combat result: ${combat.result}.` : ''}
+        {targetingMode ? ' Select a target for your card.' : ''}
+      </div>
+
       {/* Targeting mode indicator */}
       {targetingMode && (
         <div className="absolute top-2 left-1/2 -translate-x-1/2 z-40 bg-red-900/80 text-red-200 px-4 py-1 rounded-full text-sm border border-red-700">
-          Select a target — <button onClick={() => selectCard(null)} className="underline">Cancel</button>
+          Select a target — <button onClick={() => selectCard(null)} className="underline" aria-label="Cancel targeting">Cancel</button>
         </div>
       )}
 
@@ -102,24 +120,27 @@ export default function CombatScreen({ onCombatEnd }: CombatScreenProps) {
         <span className="capitalize">{combat.phase.replace('_', ' ')}</span>
       </div>
 
-      {/* Enemy area */}
-      <div className="flex-shrink-0 bg-red-950/10 border-b border-red-900/20">
-        <div className="text-[10px] text-red-400/50 uppercase tracking-wider text-center pt-1">Enemies</div>
-        <EnemyDisplay />
-      </div>
-
-      {/* Battle divider */}
-      <div className="relative mx-8">
-        <div className="border-t border-slate-600/30" />
-        <div className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-900 px-3 text-[10px] text-slate-600 uppercase tracking-widest">
-          vs
+      {/* Combat board — stacks vertically on mobile */}
+      <div className="flex flex-col md:flex-row md:items-stretch">
+        {/* Enemy area */}
+        <div className="flex-shrink-0 md:flex-1 bg-red-950/10 border-b md:border-b-0 md:border-r border-red-900/20">
+          <div className="text-[10px] text-red-400/50 uppercase tracking-wider text-center pt-1">Enemies</div>
+          <EnemyDisplay />
         </div>
-      </div>
 
-      {/* Ally area */}
-      <div className="flex-shrink-0 bg-emerald-950/10 border-t border-emerald-900/20">
-        <div className="text-[10px] text-emerald-400/50 uppercase tracking-wider text-center pt-1">Allies</div>
-        <AllyBoard />
+        {/* Battle divider */}
+        <div className="relative mx-8 md:mx-0 md:my-0 md:flex md:items-center">
+          <div className="border-t md:border-t-0 md:border-l md:h-full border-slate-600/30" />
+          <div className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 md:static md:translate-x-0 md:translate-y-0 bg-slate-900 px-3 text-[10px] text-slate-600 uppercase tracking-widest">
+            vs
+          </div>
+        </div>
+
+        {/* Ally area */}
+        <div className="flex-shrink-0 md:flex-1 bg-emerald-950/10 border-t md:border-t-0 md:border-l border-emerald-900/20">
+          <div className="text-[10px] text-emerald-400/50 uppercase tracking-wider text-center pt-1">Allies</div>
+          <AllyBoard />
+        </div>
       </div>
 
       {/* Spacer */}
@@ -134,15 +155,17 @@ export default function CombatScreen({ onCombatEnd }: CombatScreenProps) {
       <div className="flex justify-center gap-3 mb-2">
         <button
           onClick={() => setShowDeck(true)}
-          className="px-3 py-1 rounded bg-slate-700 text-slate-300 text-xs hover:bg-slate-600 transition-colors"
+          aria-label="View deck"
+          className="px-3 py-1 min-h-11 min-w-11 rounded bg-slate-700 text-slate-300 text-xs hover:bg-slate-600 transition-colors"
         >
           View Deck
         </button>
         <button
           onClick={endTurn}
+          aria-label="End turn"
           disabled={combat.phase !== 'player_action' || combat.result !== 'ongoing'}
           className={`
-            px-6 py-2 rounded-lg font-bold text-sm transition-all
+            px-6 py-2 min-h-11 min-w-11 rounded-lg font-bold text-sm transition-all
             ${combat.phase === 'player_action' && combat.result === 'ongoing'
               ? 'bg-amber-600 text-white hover:bg-amber-500 cursor-pointer'
               : 'bg-slate-700 text-slate-500 cursor-not-allowed'}
@@ -162,7 +185,7 @@ export default function CombatScreen({ onCombatEnd }: CombatScreenProps) {
 
       {/* Victory / Defeat overlay */}
       {combat.result !== 'ongoing' && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-50">
+        <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-50" role="alert">
           <div className={`text-6xl font-bold ${combat.result === 'victory' ? 'text-amber-400' : 'text-red-500'}`}>
             {combat.result === 'victory' ? 'VICTORY!' : 'DEFEAT'}
           </div>

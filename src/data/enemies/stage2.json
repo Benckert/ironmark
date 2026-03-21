@@ -1,0 +1,150 @@
+[
+  {
+    "id": "enemy_s2_corrupted_knight",
+    "name": "Corrupted Knight",
+    "hp": 16,
+    "attack": 5,
+    "tier": 2,
+    "intents": [
+      { "type": "attack", "value": 5, "description": "Tainted Slash for 5 damage" },
+      { "type": "defend", "value": 4, "description": "Blackened Shield: Gain 4 Armor", "effect": { "type": "armor", "value": 4 } },
+      { "type": "attack", "value": 7, "description": "Corrupted Cleave for 7 damage" },
+      { "type": "buff", "value": 2, "description": "Dark Resolve: Gain +2 Attack", "effect": { "type": "buff_attack", "value": 2 } }
+    ],
+    "keywords": ["ward"],
+    "artId": "art_corrupted_knight"
+  },
+  {
+    "id": "enemy_s2_shadow_hound",
+    "name": "Shadow Hound",
+    "hp": 13,
+    "attack": 5,
+    "tier": 2,
+    "intents": [
+      { "type": "attack", "value": 5, "description": "Shadow Bite for 5 damage" },
+      { "type": "attack", "value": 5, "description": "Shadow Bite for 5 damage" },
+      { "type": "debuff", "value": 2, "description": "Apply Poison 2", "effect": { "type": "apply_status", "value": 2, "statusType": "poison" } },
+      { "type": "attack", "value": 7, "description": "Lunging Maw for 7 damage" }
+    ],
+    "keywords": ["poison"],
+    "artId": "art_shadow_hound"
+  },
+  {
+    "id": "enemy_s2_arcane_construct",
+    "name": "Arcane Construct",
+    "hp": 18,
+    "attack": 4,
+    "tier": 2,
+    "intents": [
+      { "type": "attack", "value": 4, "description": "Arcane Pulse for 4 damage" },
+      { "type": "defend", "value": 5, "description": "Runic Barrier: Gain 5 Armor", "effect": { "type": "armor", "value": 5 } },
+      { "type": "attack", "value": 6, "description": "Overcharge Blast for 6 damage" },
+      { "type": "defend", "value": 3, "description": "Reinforce Plating: Gain 3 Armor", "effect": { "type": "armor", "value": 3 } }
+    ],
+    "keywords": [],
+    "artId": "art_arcane_construct"
+  },
+  {
+    "id": "enemy_s2_nightstalker",
+    "name": "Nightstalker",
+    "hp": 12,
+    "attack": 6,
+    "tier": 2,
+    "intents": [
+      { "type": "attack", "value": 6, "description": "Fang Strike for 6 damage" },
+      { "type": "debuff", "value": 3, "description": "Apply Burn 3", "effect": { "type": "apply_status", "value": 3, "statusType": "burn" } },
+      { "type": "attack", "value": 6, "description": "Fang Strike for 6 damage" }
+    ],
+    "keywords": ["burn"],
+    "artId": "art_nightstalker"
+  },
+  {
+    "id": "enemy_s2_fallen_paladin",
+    "name": "Fallen Paladin",
+    "hp": 20,
+    "attack": 5,
+    "tier": 3,
+    "intents": [
+      { "type": "attack", "value": 5, "description": "Profane Smite for 5 damage" },
+      { "type": "heal", "value": 4, "description": "Unholy Prayer: Heal self for 4", "effect": { "type": "heal", "value": 4 } },
+      { "type": "defend", "value": 4, "description": "Desecrated Ward: Gain 4 Armor", "effect": { "type": "armor", "value": 4 } },
+      { "type": "attack", "value": 8, "description": "Judgment of Ash for 8 damage" }
+    ],
+    "keywords": ["ward"],
+    "artId": "art_fallen_paladin"
+  },
+  {
+    "id": "enemy_s2_shadow_beast",
+    "name": "Shadow Beast",
+    "hp": 15,
+    "attack": 6,
+    "tier": 2,
+    "intents": [
+      { "type": "attack", "value": 6, "description": "Rending Claw for 6 damage" },
+      { "type": "buff", "value": 3, "description": "Feral Rage: Gain +3 Attack", "effect": { "type": "buff_attack", "value": 3 } },
+      { "type": "attack", "value": 6, "description": "Rending Claw for 6 damage" }
+    ],
+    "keywords": ["fury"],
+    "artId": "art_shadow_beast"
+  },
+  {
+    "id": "enemy_s2_blood_sorcerer",
+    "name": "Blood Sorcerer",
+    "hp": 14,
+    "attack": 4,
+    "tier": 2,
+    "intents": [
+      { "type": "attack", "value": 4, "description": "Blood Bolt for 4 damage" },
+      { "type": "debuff", "value": 2, "description": "Apply Poison 2", "effect": { "type": "apply_status", "value": 2, "statusType": "poison" } },
+      { "type": "debuff", "value": 2, "description": "Apply Burn 2", "effect": { "type": "apply_status", "value": 2, "statusType": "burn" } },
+      { "type": "heal", "value": 3, "description": "Blood Siphon: Heal self for 3", "effect": { "type": "heal", "value": 3 } }
+    ],
+    "keywords": ["poison", "burn"],
+    "artId": "art_blood_sorcerer"
+  },
+  {
+    "id": "enemy_s2_rusted_automaton",
+    "name": "Rusted Automaton",
+    "hp": 22,
+    "attack": 4,
+    "tier": 3,
+    "intents": [
+      { "type": "attack", "value": 4, "description": "Gear Grind for 4 damage" },
+      { "type": "defend", "value": 6, "description": "Iron Plating: Gain 6 Armor", "effect": { "type": "armor", "value": 6 } },
+      { "type": "attack", "value": 7, "description": "Piston Slam for 7 damage" },
+      { "type": "buff", "value": 2, "description": "Overclock: Gain +2 Attack", "effect": { "type": "buff_attack", "value": 2 } }
+    ],
+    "keywords": [],
+    "artId": "art_rusted_automaton"
+  },
+  {
+    "id": "enemy_elite_s2_dread_warden",
+    "name": "Dread Warden",
+    "hp": 22,
+    "attack": 7,
+    "tier": 3,
+    "intents": [
+      { "type": "attack", "value": 7, "description": "Dread Cleave for 7 damage" },
+      { "type": "defend", "value": 5, "description": "Warden's Guard: Gain 5 Armor", "effect": { "type": "armor", "value": 5 } },
+      { "type": "debuff", "value": 3, "description": "Apply Burn 3", "effect": { "type": "apply_status", "value": 3, "statusType": "burn" } },
+      { "type": "attack", "value": 10, "description": "Executioner's Blow for 10 damage" }
+    ],
+    "keywords": ["fury", "ward"],
+    "artId": "art_dread_warden"
+  },
+  {
+    "id": "enemy_elite_s2_void_channeler",
+    "name": "Void Channeler",
+    "hp": 20,
+    "attack": 6,
+    "tier": 3,
+    "intents": [
+      { "type": "attack", "value": 6, "description": "Void Lash for 6 damage" },
+      { "type": "debuff", "value": 3, "description": "Apply Poison 3", "effect": { "type": "apply_status", "value": 3, "statusType": "poison" } },
+      { "type": "buff", "value": 3, "description": "Channel the Void: Gain +3 Attack", "effect": { "type": "buff_attack", "value": 3 } },
+      { "type": "attack", "value": 9, "description": "Void Eruption for 9 damage" }
+    ],
+    "keywords": ["poison"],
+    "artId": "art_void_channeler"
+  }
+]

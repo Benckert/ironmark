@@ -15,6 +15,7 @@ export interface MapEdge {
 }
 
 export interface MapState {
+  stage: number
   nodes: MapNode[]
   edges: MapEdge[]
   currentNodeId: string

@@ -1,5 +1,10 @@
-import type { RunStartOption } from '@engine/types/run.ts'
+import type { RunStartOption, RunState } from '@engine/types/run.ts'
+import type { Card } from '@engine/types/card.ts'
 import { SeededRNG } from '../../utils/random.ts'
+import { getAllCards, getAllGear } from '@data/dataLoader.ts'
+import { removeCardFromDeck } from '../cards/deckManager.ts'
+import { equipGear } from '../cards/gearManager.ts'
+import { generateRelicReward } from '../rewards/rewardGenerator.ts'
 
 const SAFE_OPTIONS: Omit<RunStartOption, 'id'>[] = [
   {
@@ -89,4 +94,84 @@ export function generateRunStartOptions(rng: SeededRNG): RunStartOption[] {
     { ...moderate, id: 'option_3' },
     { ...gamble, id: 'option_4' },
   ]
+}
+
+export function applyGambleOption(run: RunState, option: RunStartOption, rng: SeededRNG): RunState {
+  const updatedRun = { ...run }
+
+  switch (option.apply) {
+    case 'gold':
+      updatedRun.gold += option.value ?? 50
+      updatedRun.stats = { ...updatedRun.stats, goldEarned: updatedRun.stats.goldEarned + (option.value ?? 50) }
+      break
+    case 'remove_starter': {
+      const starters = updatedRun.deck.filter((c) => c.id.includes('starter'))
+      if (starters.length > 0) {
+        const toRemove = rng.pick(starters)
+        updatedRun.deck = removeCardFromDeck(updatedRun.deck, toRemove.id)
+      }
+      break
+    }
+    case 'max_hp':
+      updatedRun.maxHp += option.value ?? 3
+      updatedRun.hp += option.value ?? 3
+      break
+    case 'add_card': {
+      const commons = getAllCards().filter((c) => c.rarity === 'common' && !c.id.includes('starter'))
+      if (commons.length > 0) {
+        updatedRun.deck = [...updatedRun.deck, rng.pick(commons)]
+      }
+      break
+    }
+    case 'uncommon_card_lose_hp': {
+      const uncommons = getAllCards().filter((c) => c.rarity === 'uncommon')
+      if (uncommons.length > 0) {
+        updatedRun.deck = [...updatedRun.deck, rng.pick(uncommons)]
+      }
+      updatedRun.hp = Math.max(1, updatedRun.hp - (option.value ?? 5))
+      break
+    }
+    case 'gold_and_curse':
+      updatedRun.gold += option.value ?? 40
+      updatedRun.stats = { ...updatedRun.stats, goldEarned: updatedRun.stats.goldEarned + (option.value ?? 40) }
+      break
+    case 'random_gear': {
+      const gear = getAllGear()
+      if (gear.length > 0) {
+        const picked = rng.pick(gear)
+        const equipped = equipGear(updatedRun.equippedGear, [...updatedRun.gearInventory, picked], picked)
+        updatedRun.gearInventory = equipped.gearInventory
+        updatedRun.equippedGear = equipped.equippedGear
+      }
+      break
+    }
+    case 'random_relic': {
+      const relic = generateRelicReward(rng)
+      updatedRun.relics = [...updatedRun.relics, relic]
+      break
+    }
+    case 'transform_deck': {
+      const allCards = getAllCards().filter((c) => !c.id.includes('starter'))
+      const newDeck: Card[] = []
+      for (let idx = 0; idx < updatedRun.deck.length; idx++) {
+        if (allCards.length > 0) {
+          newDeck.push(rng.pick(allCards))
+        }
+      }
+      updatedRun.deck = newDeck
+      break
+    }
+    case 'rare_card_lose_max_hp': {
+      const rares = getAllCards().filter((c) => c.rarity === 'rare')
+      if (rares.length > 0) {
+        updatedRun.deck = [...updatedRun.deck, rng.pick(rares)]
+      }
+      updatedRun.gold += 30
+      updatedRun.maxHp = Math.max(1, updatedRun.maxHp - (option.value ?? 8))
+      updatedRun.hp = Math.min(updatedRun.hp, updatedRun.maxHp)
+      break
+    }
+  }
+
+  return updatedRun
 }

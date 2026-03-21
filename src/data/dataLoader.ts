@@ -13,6 +13,32 @@ import bossesData from './enemies/bosses.json'
 import heroesData from './heroes/heroes.json'
 import stage1Events from './events/stage1Events.json'
 
+// Stage 2/3 data — conditionally loaded
+let stage2Enemies: EnemyTemplate[] = []
+let stage3Enemies: EnemyTemplate[] = []
+let stage2Events: EventDefinition[] = []
+let stage3Events: EventDefinition[] = []
+
+try {
+  const s2e = await import('./enemies/stage2.json')
+  stage2Enemies = s2e.default as EnemyTemplate[]
+} catch { /* stage2 enemies not yet created */ }
+
+try {
+  const s3e = await import('./enemies/stage3.json')
+  stage3Enemies = s3e.default as EnemyTemplate[]
+} catch { /* stage3 enemies not yet created */ }
+
+try {
+  const s2ev = await import('./events/stage2Events.json')
+  stage2Events = s2ev.default as EventDefinition[]
+} catch { /* stage2 events not yet created */ }
+
+try {
+  const s3ev = await import('./events/stage3Events.json')
+  stage3Events = s3ev.default as EventDefinition[]
+} catch { /* stage3 events not yet created */ }
+
 const allCards: Card[] = [
   ...(mightCards as Card[]),
   ...(wisdomCards as Card[]),
@@ -22,13 +48,27 @@ const allCards: Card[] = [
 
 const allGearCards: GearCard[] = allGear as GearCard[]
 
-const allEnemies: EnemyTemplate[] = stage1Enemies as EnemyTemplate[]
+const stage1EnemyList: EnemyTemplate[] = stage1Enemies as EnemyTemplate[]
 const allBosses = bossesData as (EnemyTemplate & { passive?: { name: string; description: string }; phase2?: { hpThreshold: number; intents: EnemyTemplate['intents'] } })[]
 
 const heroes: HeroDefinition[] = heroesData as HeroDefinition[]
-const events: EventDefinition[] = stage1Events as EventDefinition[]
+const stage1EventList: EventDefinition[] = stage1Events as EventDefinition[]
 
-// Card lookup maps
+// Collect all enemies across stages
+const allEnemies: EnemyTemplate[] = [
+  ...stage1EnemyList,
+  ...stage2Enemies,
+  ...stage3Enemies,
+]
+
+// Collect all events across stages
+const allEvents: EventDefinition[] = [
+  ...stage1EventList,
+  ...stage2Events,
+  ...stage3Events,
+]
+
+// Lookup maps
 const cardMap = new Map<string, Card>()
 for (const card of allCards) {
   cardMap.set(card.id, card)
@@ -53,7 +93,7 @@ for (const hero of heroes) {
 }
 
 const eventMap = new Map<string, EventDefinition>()
-for (const event of events) {
+for (const event of allEvents) {
   eventMap.set(event.id, event)
 }
 
@@ -98,7 +138,7 @@ export function getAllHeroes(): HeroDefinition[] {
 }
 
 export function getAllEvents(): EventDefinition[] {
-  return events
+  return allEvents
 }
 
 export function getCardsByFaction(faction: string): Card[] {
@@ -115,6 +155,38 @@ export function getCardsByRarity(rarity: string): Card[] {
 
 export function getEnemiesByTier(tier: 1 | 2 | 3): EnemyTemplate[] {
   return allEnemies.filter((enemy) => enemy.tier === tier)
+}
+
+export function getEnemiesByTierAndStage(tier: 1 | 2 | 3, stage: number): EnemyTemplate[] {
+  const stageEnemies = getEnemiesByStage(stage)
+  return stageEnemies.filter((enemy) => enemy.tier === tier)
+}
+
+export function getEnemiesByStage(stage: number): EnemyTemplate[] {
+  switch (stage) {
+    case 1: return stage1EnemyList
+    case 2: return stage2Enemies
+    case 3: return stage3Enemies
+    default: return stage1EnemyList
+  }
+}
+
+export function getEventsByStage(stage: number): EventDefinition[] {
+  switch (stage) {
+    case 1: return stage1EventList
+    case 2: return stage2Events
+    case 3: return stage3Events
+    default: return stage1EventList
+  }
+}
+
+export function getBossByStage(stage: number): typeof allBosses[number] | undefined {
+  switch (stage) {
+    case 1: return allBosses.find((b) => b.id === 'boss_hollow_king')
+    case 2: return allBosses.find((b) => b.id === 'boss_iron_warden')
+    case 3: return allBosses.find((b) => b.id === 'boss_void_sovereign')
+    default: return allBosses[0]
+  }
 }
 
 export function getStarterDeck(heroId: string): Card[] {
@@ -197,6 +269,24 @@ export function validateData(): string[] {
         errors.push(`Card ${card.id} has invalid keyword: ${keyword}`)
       }
     }
+  }
+
+  // Check unique enemy IDs
+  const enemyIds = new Set<string>()
+  for (const enemy of [...allEnemies, ...allBosses]) {
+    if (enemyIds.has(enemy.id)) {
+      errors.push(`Duplicate enemy ID: ${enemy.id}`)
+    }
+    enemyIds.add(enemy.id)
+  }
+
+  // Check unique event IDs
+  const eventIds = new Set<string>()
+  for (const event of allEvents) {
+    if (eventIds.has(event.id)) {
+      errors.push(`Duplicate event ID: ${event.id}`)
+    }
+    eventIds.add(event.id)
   }
 
   return errors
