@@ -63,7 +63,13 @@ export default function Card({ card, size = 'medium', onClick, isPlayable = true
       </div>
 
       {/* Card name */}
-      <div className={`text-center font-semibold text-white mt-3 mb-1 truncate ${factionAccent[card.faction]}`}>
+      <div
+        className={`text-center font-semibold text-white mt-3 mb-1 leading-tight ${factionAccent[card.faction]} ${
+          card.name.length > 14 ? 'text-[8px]' : ''
+        }`}
+        title={card.name}
+        style={{ wordBreak: 'break-word', lineHeight: '1.1', maxHeight: '2.4em', overflow: 'hidden' }}
+      >
         {card.name}
       </div>
 

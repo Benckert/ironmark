@@ -10,6 +10,7 @@ import {
   startTurn,
   playCard as enginePlayCard,
   endPlayerTurn,
+  endPlayerTurnWithTargets,
   executeEnemyPhase,
   canPlayCard as engineCanPlayCard,
   useHeroPower as engineUseHeroPower,
@@ -23,6 +24,9 @@ interface CombatStore {
   selectedCardId: string | null
   targetingMode: boolean
   animatingEnemyPhase: boolean
+  allyTargetingMode: boolean
+  allyTargets: Record<string, string> // allyInstanceId -> enemyInstanceId
+  currentAllyTargetIndex: number
 
   initCombat: (runState: RunState, enemies: EnemyTemplate[], seed: string) => void
   beginTurn: () => void
@@ -30,6 +34,7 @@ interface CombatStore {
   playCard: (cardId: string, targetId?: string) => void
   useHeroPower: (targetId?: string) => void
   endTurn: () => void
+  assignAllyTarget: (enemyInstanceId: string) => void
   canPlay: (card: Card) => boolean
   getCardCost: (card: Card) => number
   needsTarget: (card: Card) => boolean
@@ -43,12 +48,17 @@ export const useCombatStore = create<CombatStore>((set, get) => ({
   selectedCardId: null,
   targetingMode: false,
   animatingEnemyPhase: false,
+  allyTargetingMode: false,
+  allyTargets: {},
+  currentAllyTargetIndex: 0,
 
   initCombat: (runState, enemies, seed) => {
     const rng = new SeededRNG(seed + '_combat')
     const combat = initializeCombat(runState, enemies, rng)
+    // Immediately start turn 1 to avoid double-increment from effects
+    const combatWithFirstTurn = startTurn(combat, rng)
     set({
-      combat,
+      combat: combatWithFirstTurn,
       rng,
       heroDefinition: runState.hero,
       selectedCardId: null,
@@ -110,17 +120,48 @@ export const useCombatStore = create<CombatStore>((set, get) => ({
     const { combat, rng } = get()
     if (!combat || combat.phase !== 'player_action') return
 
+    // If there are allies and multiple enemies, enter ally targeting mode
+    const attackableAllies = combat.allies.filter((a) => a.currentHp > 0 && !a.hasAttackedThisTurn)
+    if (attackableAllies.length > 0 && combat.enemies.filter((e) => e.hp > 0).length > 1) {
+      set({
+        allyTargetingMode: true,
+        allyTargets: {},
+        currentAllyTargetIndex: 0,
+      })
+      return
+    }
+
+    // Single or no enemies — proceed with auto-targeting
     set({ animatingEnemyPhase: true })
-
-    // End player turn (ally attacks)
     let newState = endPlayerTurn(combat, rng ?? undefined)
-
-    // Execute enemy phase
     if (newState.result === 'ongoing') {
       newState = executeEnemyPhase(newState, rng ?? undefined)
     }
-
     set({ combat: newState, animatingEnemyPhase: false })
+  },
+
+  assignAllyTarget: (enemyInstanceId: string) => {
+    const { combat, rng, allyTargets, currentAllyTargetIndex } = get()
+    if (!combat) return
+
+    const attackableAllies = combat.allies.filter((a) => a.currentHp > 0 && !a.hasAttackedThisTurn)
+    const currentAlly = attackableAllies[currentAllyTargetIndex]
+    if (!currentAlly) return
+
+    const newTargets = { ...allyTargets, [currentAlly.instanceId]: enemyInstanceId }
+    const nextIndex = currentAllyTargetIndex + 1
+
+    if (nextIndex >= attackableAllies.length) {
+      // All allies targeted — execute turn with targets
+      set({ allyTargetingMode: false, animatingEnemyPhase: true })
+      let newState = endPlayerTurnWithTargets(combat, newTargets, rng ?? undefined)
+      if (newState.result === 'ongoing') {
+        newState = executeEnemyPhase(newState, rng ?? undefined)
+      }
+      set({ combat: newState, animatingEnemyPhase: false, allyTargets: {}, currentAllyTargetIndex: 0 })
+    } else {
+      set({ allyTargets: newTargets, currentAllyTargetIndex: nextIndex })
+    }
   },
 
   canPlay: (card) => {
@@ -151,6 +192,9 @@ export const useCombatStore = create<CombatStore>((set, get) => ({
       selectedCardId: null,
       targetingMode: false,
       animatingEnemyPhase: false,
+      allyTargetingMode: false,
+      allyTargets: {},
+      currentAllyTargetIndex: 0,
     })
   },
 }))

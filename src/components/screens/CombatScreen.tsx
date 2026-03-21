@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useCombatStore } from '@stores/combatStore.ts'
+import { extractCombatStats } from '@engine/combat/combatEngine.ts'
 import EnemyDisplay from '../combat/EnemyDisplay.tsx'
 import AllyBoard from '../combat/AllyBoard.tsx'
 import HeroHUD from '../combat/HeroHUD.tsx'
@@ -7,7 +8,7 @@ import CardHand from '../cards/CardHand.tsx'
 import DeckViewer from '../combat/DeckViewer.tsx'
 
 interface CombatScreenProps {
-  onCombatEnd: (result: 'victory' | 'defeat') => void
+  onCombatEnd: (result: 'victory' | 'defeat', finalHp?: number, combatStats?: { turnsPlayed: number; damageDealt: number; damageReceived: number; cardsPlayed: number; enemiesKilled: number }) => void
 }
 
 export default function CombatScreen({ onCombatEnd }: CombatScreenProps) {
@@ -16,15 +17,18 @@ export default function CombatScreen({ onCombatEnd }: CombatScreenProps) {
   const endTurn = useCombatStore((s) => s.endTurn)
   const targetingMode = useCombatStore((s) => s.targetingMode)
   const selectCard = useCombatStore((s) => s.selectCard)
+  const allyTargetingMode = useCombatStore((s) => s.allyTargetingMode)
+  const currentAllyTargetIndex = useCombatStore((s) => s.currentAllyTargetIndex)
   const [showDeck, setShowDeck] = useState(false)
   const [combatEnded, setCombatEnded] = useState(false)
+  const initialEnemyCount = useRef(0)
 
-  // Start first turn
+  // Track initial enemy count when combat starts
   useEffect(() => {
-    if (combat && combat.turn === 0 && combat.result === 'ongoing') {
-      beginTurn()
+    if (combat && combat.turn === 1) {
+      initialEnemyCount.current = combat.enemies.length
     }
-  }, [combat?.turn])
+  }, [combat?.turn === 1])
 
   // Start next turn after enemy phase
   useEffect(() => {
@@ -36,12 +40,14 @@ export default function CombatScreen({ onCombatEnd }: CombatScreenProps) {
     }
   }, [combat?.phase])
 
-  // Handle combat end
+  // Handle combat end — sync HP and stats back to run
   useEffect(() => {
     if (combat && combat.result !== 'ongoing' && !combatEnded) {
       setCombatEnded(true)
+      const stats = extractCombatStats(combat, initialEnemyCount.current)
+      const finalHp = combat.player.hp
       const timer = setTimeout(() => {
-        onCombatEnd(combat.result as 'victory' | 'defeat')
+        onCombatEnd(combat.result as 'victory' | 'defeat', finalHp, stats)
       }, 2000)
       return () => clearTimeout(timer)
     }
@@ -59,6 +65,17 @@ export default function CombatScreen({ onCombatEnd }: CombatScreenProps) {
           Select a target — <button onClick={() => selectCard(null)} className="underline">Cancel</button>
         </div>
       )}
+
+      {/* Ally targeting mode indicator */}
+      {allyTargetingMode && combat && (() => {
+        const attackableAllies = combat.allies.filter((a) => a.currentHp > 0 && !a.hasAttackedThisTurn)
+        const currentAlly = attackableAllies[currentAllyTargetIndex]
+        return currentAlly ? (
+          <div className="absolute top-2 left-1/2 -translate-x-1/2 z-40 bg-emerald-900/80 text-emerald-200 px-4 py-1 rounded-full text-sm border border-emerald-700">
+            Choose target for <span className="font-bold">{currentAlly.card.name}</span> ({currentAllyTargetIndex + 1}/{attackableAllies.length})
+          </div>
+        ) : null
+      })()}
 
       {/* Turn / Phase info */}
       <div className="flex justify-between items-center px-4 py-2 text-xs text-slate-500">
