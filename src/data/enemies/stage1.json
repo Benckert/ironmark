@@ -29,13 +29,13 @@
   {
     "id": "enemy_bandit_thug",
     "name": "Bandit Thug",
-    "hp": 8,
-    "attack": 4,
+    "hp": 7,
+    "attack": 3,
     "tier": 1,
     "intents": [
-      { "type": "attack", "value": 4, "description": "Strike for 4 damage" },
-      { "type": "defend", "value": 3, "description": "Gain 3 Armor", "effect": { "type": "armor", "value": 3 } },
-      { "type": "attack", "value": 4, "description": "Strike for 4 damage" }
+      { "type": "attack", "value": 3, "description": "Strike for 3 damage" },
+      { "type": "defend", "value": 2, "description": "Gain 2 Armor", "effect": { "type": "armor", "value": 2 } },
+      { "type": "attack", "value": 3, "description": "Strike for 3 damage" }
     ],
     "keywords": [],
     "artId": "art_bandit_thug"
@@ -70,13 +70,13 @@
   {
     "id": "enemy_orc_warrior",
     "name": "Orc Warrior",
-    "hp": 14,
-    "attack": 5,
+    "hp": 12,
+    "attack": 4,
     "tier": 2,
     "intents": [
-      { "type": "attack", "value": 5, "description": "Cleave for 5 damage" },
+      { "type": "attack", "value": 4, "description": "Cleave for 4 damage" },
       { "type": "buff", "value": 2, "description": "Gain +2 Attack", "effect": { "type": "buff_attack", "value": 2 } },
-      { "type": "attack", "value": 7, "description": "Heavy Strike for 7 damage" }
+      { "type": "attack", "value": 6, "description": "Heavy Strike for 6 damage" }
     ],
     "keywords": ["fury"],
     "artId": "art_orc_warrior"
@@ -126,7 +126,7 @@
   {
     "id": "enemy_stone_golem",
     "name": "Stone Golem",
-    "hp": 16,
+    "hp": 14,
     "attack": 4,
     "tier": 2,
     "intents": [

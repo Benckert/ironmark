@@ -12,6 +12,7 @@ import { generateShop, buyCard, buyGear, buyCardRemoval } from '@engine/rewards/
 import { selectEvent, resolveChoice } from '@engine/events/eventEngine.ts'
 import { generateRunStartOptions } from '@engine/run/runStartGamble.ts'
 import { removeCardFromDeck, upgradeCard } from '@engine/cards/deckManager.ts'
+import { equipGear } from '@engine/cards/gearManager.ts'
 import { SeededRNG } from '../utils/random.ts'
 import { saveActiveRun, loadActiveRun, clearActiveRun, saveRunHistory } from '../db/database.ts'
 import type { RunHistoryEntry } from '@engine/types/run.ts'
@@ -33,7 +34,7 @@ interface GameStore {
   returnToMap: () => void
 
   // Combat integration
-  onCombatEnd: (result: 'victory' | 'defeat') => void
+  onCombatEnd: (result: 'victory' | 'defeat', finalHp?: number, combatStats?: { turnsPlayed: number; damageDealt: number; damageReceived: number; cardsPlayed: number; enemiesKilled: number }) => void
 
   // Rewards
   selectRewardCard: (card: Card) => void
@@ -198,7 +199,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
         const gear = getAllGear()
         if (gear.length > 0) {
           const picked = rng.pick(gear)
-          updatedRun.gearInventory = [...updatedRun.gearInventory, picked]
+          const equipped = equipGear(updatedRun.equippedGear, [...updatedRun.gearInventory, picked], picked)
+          updatedRun.gearInventory = equipped.gearInventory
+          updatedRun.equippedGear = equipped.equippedGear
         }
         break
       }
@@ -303,24 +306,38 @@ export const useGameStore = create<GameStore>((set, get) => ({
     get().autoSave()
   },
 
-  onCombatEnd: (result: 'victory' | 'defeat') => {
+  onCombatEnd: (result: 'victory' | 'defeat', finalHp?: number, combatStats?: { turnsPlayed: number; damageDealt: number; damageReceived: number; cardsPlayed: number; enemiesKilled: number }) => {
     const { run } = get()
     if (!run) return
 
+    // Sync HP and stats from combat back to run state
+    const updatedRun: RunState = {
+      ...run,
+      hp: finalHp ?? run.hp,
+      stats: combatStats ? {
+        ...run.stats,
+        turnsPlayed: run.stats.turnsPlayed + combatStats.turnsPlayed,
+        damageDealt: run.stats.damageDealt + combatStats.damageDealt,
+        damageReceived: run.stats.damageReceived + combatStats.damageReceived,
+        cardsPlayed: run.stats.cardsPlayed + combatStats.cardsPlayed,
+        enemiesKilled: run.stats.enemiesKilled + combatStats.enemiesKilled,
+      } : run.stats,
+    }
+
     if (result === 'defeat') {
-      set({ run: { ...run, phase: 'defeat' } })
+      set({ run: { ...updatedRun, phase: 'defeat' } })
       return
     }
 
     // Victory — check if it was boss
     const currentNode = run.map?.nodes.find((n) => n.id === run.currentNodeId)
     if (currentNode?.type === 'boss') {
-      set({ run: { ...run, phase: 'victory' } })
+      set({ run: { ...updatedRun, phase: 'victory' } })
       return
     }
 
     // Regular combat/elite victory — go to reward
-    set({ run: { ...run, phase: 'reward' } })
+    set({ run: { ...updatedRun, phase: 'reward' } })
   },
 
   selectRewardCard: (card: Card) => {
@@ -352,7 +369,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   takeGear: (gear: GearCard) => {
     const { run } = get()
     if (!run) return
-    set({ run: { ...run, gearInventory: [...run.gearInventory, gear] } })
+    const equipped = equipGear(run.equippedGear, [...run.gearInventory, gear], gear)
+    set({ run: { ...run, gearInventory: equipped.gearInventory, equippedGear: equipped.equippedGear } })
   },
 
   skipGear: () => {
@@ -384,11 +402,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
     if (!run || !shop) return
     const result = buyGear(shop, index, run.gold)
     if (!result) return
+    const equipped = equipGear(run.equippedGear, [...run.gearInventory, result.gear], result.gear)
     set({
       run: {
         ...run,
         gold: result.newGold,
-        gearInventory: [...run.gearInventory, result.gear],
+        gearInventory: equipped.gearInventory,
+        equippedGear: equipped.equippedGear,
         stats: { ...run.stats, goldSpent: run.stats.goldSpent + (run.gold - result.newGold) },
       },
       shop: result.shop,
@@ -475,6 +495,15 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const newMaxHp = Math.max(1, run.maxHp + result.maxHpDelta)
     const newGold = Math.max(0, run.gold + result.goldDelta)
 
+    // Auto-equip any gear gained from events
+    let updatedGearInventory = [...run.gearInventory]
+    let updatedEquippedGear = [...run.equippedGear]
+    for (const gear of result.addedGear) {
+      const equipped = equipGear(updatedEquippedGear, [...updatedGearInventory, gear], gear)
+      updatedEquippedGear = equipped.equippedGear
+      updatedGearInventory = equipped.gearInventory
+    }
+
     set({
       run: {
         ...run,
@@ -482,7 +511,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
         maxHp: newMaxHp,
         gold: newGold,
         deck: [...run.deck, ...result.addedCards],
-        gearInventory: [...run.gearInventory, ...result.addedGear],
+        gearInventory: updatedGearInventory,
+        equippedGear: updatedEquippedGear,
         stats: {
           ...run.stats,
           goldEarned: run.stats.goldEarned + Math.max(0, result.goldDelta),

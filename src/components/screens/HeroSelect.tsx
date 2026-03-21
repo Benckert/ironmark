@@ -25,7 +25,7 @@ export default function HeroSelect({ onSelect }: HeroSelectProps) {
       <h1 className="text-3xl font-bold text-slate-200 mb-2">Choose Your Hero</h1>
       <p className="text-slate-500 mb-10">Each hero has a unique faction, passive, and hero power.</p>
 
-      <div className="flex gap-8">
+      <div className="flex flex-wrap gap-8 justify-center max-w-full px-4">
         {heroes.map((hero) => (
           <HeroCard key={hero.id} hero={hero} onSelect={() => onSelect(hero.id)} />
         ))}

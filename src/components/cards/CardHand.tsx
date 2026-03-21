@@ -38,7 +38,7 @@ export default function CardHand() {
         <span>Discard: {combat.discardPile.length}</span>
       </div>
 
-      <div className="flex justify-center items-end gap-1 py-2 min-h-[180px]">
+      <div className="flex justify-center items-end gap-1 py-2 min-h-[180px] overflow-x-auto px-4">
         {hand.map((card, index) => {
           const isPlayable = canPlay(card) && combat.phase === 'player_action'
           const isSelected = selectedCardId === card.id

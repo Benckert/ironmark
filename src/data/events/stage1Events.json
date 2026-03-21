@@ -141,5 +141,161 @@
       }
     ],
     "artId": "art_crossroads"
+  },
+  {
+    "id": "event_ancient_forge",
+    "name": "The Ancient Forge",
+    "narrative": "Heat still radiates from a stone forge set deep into the wall. Whoever left it burning is long gone, but the coals glow with unnatural life. A hammer and tongs rest beside an anvil, waiting.",
+    "choices": [
+      {
+        "label": "Forge gear",
+        "description": "Use the forge to craft a piece of equipment.",
+        "outcome": {
+          "description": "Sparks fly as the metal shapes itself beneath your hands. A weapon takes form.",
+          "effects": [{ "type": "add_gear", "cardRarity": "uncommon" }]
+        }
+      },
+      {
+        "label": "Temper yourself",
+        "description": "Plunge your hand into the coals. Pain grants power.",
+        "outcome": {
+          "description": "The fire brands your flesh. You are tougher for it.",
+          "effects": [
+            { "type": "damage", "value": 4 },
+            { "type": "max_hp", "value": 5 }
+          ]
+        }
+      }
+    ],
+    "artId": "art_ancient_forge"
+  },
+  {
+    "id": "event_goblin_gambler",
+    "name": "The Goblin Gambler",
+    "narrative": "A goblin crouches behind an overturned crate, three cups arranged before him. \"Find the coin, double your gold. Lose it, lose it all. Simple game, yes?\" His grin reveals far too many teeth.",
+    "choices": [
+      {
+        "label": "Play the game",
+        "description": "Wager 15 gold on the shell game.",
+        "outcome": {
+          "description": "The goblin's hands are fast, but yours are faster. You snatch the coin — and his pouch.",
+          "effects": [{ "type": "gold", "value": 25 }]
+        }
+      },
+      {
+        "label": "Flip the table",
+        "description": "You're not here to gamble. Take what you can.",
+        "outcome": {
+          "description": "The goblin squeals and flees, leaving behind a few scattered coins and a crude card.",
+          "effects": [
+            { "type": "gold", "value": 10 },
+            { "type": "add_card", "cardRarity": "common" }
+          ]
+        }
+      },
+      {
+        "label": "Walk away",
+        "description": "Never trust a goblin's game.",
+        "outcome": {
+          "description": "You leave the goblin to his swindle. Sometimes wisdom is its own reward.",
+          "effects": [{ "type": "heal", "value": 3 }]
+        }
+      }
+    ],
+    "artId": "art_goblin_gambler"
+  },
+  {
+    "id": "event_fallen_hero",
+    "name": "The Fallen Hero",
+    "narrative": "A skeleton in rusted armor sits propped against a pillar, a sealed scroll clutched to its chest. The armor is still serviceable, and the scroll pulses faintly with enchantment. You can only carry one.",
+    "choices": [
+      {
+        "label": "Take the armor",
+        "description": "Claim the fallen hero's gear.",
+        "outcome": {
+          "description": "The armor fits well enough. The dead have no need of protection.",
+          "effects": [{ "type": "add_gear", "cardRarity": "uncommon" }]
+        }
+      },
+      {
+        "label": "Take the scroll",
+        "description": "Unroll the enchanted scroll and absorb its knowledge.",
+        "outcome": {
+          "description": "The scroll dissolves into light as you read it. New techniques flood your mind.",
+          "effects": [{ "type": "add_card", "cardRarity": "rare" }]
+        }
+      }
+    ],
+    "artId": "art_fallen_hero"
+  },
+  {
+    "id": "event_poisoned_spring",
+    "name": "The Poisoned Spring",
+    "narrative": "A natural spring bubbles up from cracked stone, its water shimmering with an iridescent sheen. The liquid could be healing waters tainted by the dungeon's corruption — or something else entirely.",
+    "choices": [
+      {
+        "label": "Drink deeply",
+        "description": "Risk the water. It could heal or harm.",
+        "outcome": {
+          "description": "The water burns going down, but warmth spreads through your body. You feel revitalized.",
+          "effects": [{ "type": "heal", "value": 12 }]
+        }
+      },
+      {
+        "label": "Bottle it",
+        "description": "Collect the water for later. Gain gold from selling it.",
+        "outcome": {
+          "description": "Merchants pay well for mysterious liquids. No questions asked.",
+          "effects": [{ "type": "gold", "value": 20 }]
+        }
+      },
+      {
+        "label": "Avoid it",
+        "description": "Nothing good glows like that.",
+        "outcome": {
+          "description": "You leave the spring behind. Caution keeps you alive another day.",
+          "effects": []
+        }
+      }
+    ],
+    "artId": "art_poisoned_spring"
+  },
+  {
+    "id": "event_mysterious_statue",
+    "name": "The Mysterious Statue",
+    "narrative": "A towering statue of a warrior stands at the center of a forgotten chamber. One hand holds a sword aloft; the other extends an open palm. An inscription reads: 'Offer strength, receive wisdom. Offer gold, receive strength.'",
+    "choices": [
+      {
+        "label": "Offer HP",
+        "description": "Sacrifice 6 HP to receive a powerful card.",
+        "outcome": {
+          "description": "Blood drips from your palm onto the statue's hand. A card materializes in the air before you.",
+          "effects": [
+            { "type": "damage", "value": 6 },
+            { "type": "add_card", "cardRarity": "rare" }
+          ]
+        }
+      },
+      {
+        "label": "Offer gold",
+        "description": "Place 25 gold in the statue's palm to gain max HP.",
+        "outcome": {
+          "description": "The gold vanishes. Warmth floods your body — you feel hardier than before.",
+          "effects": [
+            { "type": "gold", "value": -25 },
+            { "type": "max_hp", "value": 5 }
+          ]
+        }
+      },
+      {
+        "label": "Leave",
+        "description": "Statues that ask for things rarely give fair deals.",
+        "outcome": {
+          "description": "You turn your back on the statue. Its eyes seem to follow you out.",
+          "effects": []
+        }
+      }
+    ],
+    "artId": "art_mysterious_statue"
   }
 ]

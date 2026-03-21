@@ -17,14 +17,20 @@ export default function EnemyDisplay() {
   const targetingMode = useCombatStore((s) => s.targetingMode)
   const selectedCardId = useCombatStore((s) => s.selectedCardId)
   const playCard = useCombatStore((s) => s.playCard)
+  const allyTargetingMode = useCombatStore((s) => s.allyTargetingMode)
+  const assignAllyTarget = useCombatStore((s) => s.assignAllyTarget)
 
   if (!combat) return null
 
   const handleEnemyClick = (enemy: EnemyInstance) => {
     if (targetingMode && selectedCardId) {
       playCard(selectedCardId, enemy.instanceId)
+    } else if (allyTargetingMode) {
+      assignAllyTarget(enemy.instanceId)
     }
   }
+
+  const isTargetable = targetingMode || allyTargetingMode
 
   return (
     <div className="flex justify-center gap-4 py-4">
@@ -32,7 +38,7 @@ export default function EnemyDisplay() {
         <EnemyCard
           key={enemy.instanceId}
           enemy={enemy}
-          isTargetable={targetingMode}
+          isTargetable={isTargetable}
           onClick={() => handleEnemyClick(enemy)}
         />
       ))}

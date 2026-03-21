@@ -133,9 +133,9 @@ export default function RestScreen({
             {showDeck === 'upgrade' ? 'Select a card to upgrade' : 'Select a card to remove'}
           </h2>
           <div className="flex flex-wrap gap-3 justify-center mb-4">
-            {(showDeck === 'upgrade' ? upgradableCards : deck).map((card) => (
+            {(showDeck === 'upgrade' ? upgradableCards : deck).map((card, index) => (
               <div
-                key={card.id}
+                key={`${card.id}_${index}`}
                 onMouseEnter={() => showDeck === 'upgrade' ? setPreviewCardId(card.id) : undefined}
                 onMouseLeave={() => setPreviewCardId(null)}
               >

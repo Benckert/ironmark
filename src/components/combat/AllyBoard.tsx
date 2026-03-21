@@ -1,5 +1,18 @@
 import type { AllyInstance } from '@engine/types/combat.ts'
+import type { Keyword } from '@engine/types/card.ts'
 import { useCombatStore } from '@stores/combatStore.ts'
+
+const keywordDescriptions: Record<Keyword, string> = {
+  strike: 'Triggers an effect when this ally deals damage',
+  deathblow: 'Triggers an effect when this ally dies',
+  echo: 'Returns a copy of this spell to your hand when played',
+  ward: 'Blocks the next instance of damage',
+  taunt: 'Forces enemies to attack this ally instead of the hero',
+  burn: 'Deals 1 damage at the start of each turn per stack',
+  poison: 'Deals 1 damage at the start of each turn per stack',
+  fury: 'Gains +1 Attack whenever this ally takes damage',
+  blessing: 'Grants a beneficial effect to allies',
+}
 
 export default function AllyBoard() {
   const combat = useCombatStore((s) => s.combat)
@@ -76,7 +89,7 @@ function AllyCard({
       {ally.card.keywords.length > 0 && (
         <div className="flex flex-wrap gap-0.5 mt-1 justify-center">
           {ally.card.keywords.map((kw) => (
-            <span key={kw} className="text-[7px] px-0.5 rounded bg-slate-700 text-slate-400 capitalize">
+            <span key={kw} className="text-[7px] px-0.5 rounded bg-slate-700 text-slate-400 capitalize cursor-help" title={keywordDescriptions[kw] ?? kw}>
               {kw}
             </span>
           ))}

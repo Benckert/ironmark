@@ -1,4 +1,16 @@
-import type { Card as CardType, AllyCard, SpellCard, GearCard } from '@engine/types/card.ts'
+import type { Card as CardType, AllyCard, SpellCard, GearCard, Keyword } from '@engine/types/card.ts'
+
+const keywordDescriptions: Record<Keyword, string> = {
+  strike: 'Triggers an effect when this ally deals damage',
+  deathblow: 'Triggers an effect when this ally dies',
+  echo: 'Returns a copy of this spell to your hand when played',
+  ward: 'Blocks the next instance of damage',
+  taunt: 'Forces enemies to attack this ally instead of the hero',
+  burn: 'Deals 1 damage at the start of each turn per stack',
+  poison: 'Deals 1 damage at the start of each turn per stack',
+  fury: 'Gains +1 Attack whenever this ally takes damage',
+  blessing: 'Grants a beneficial effect to allies',
+}
 
 interface CardProps {
   card: CardType
@@ -63,7 +75,13 @@ export default function Card({ card, size = 'medium', onClick, isPlayable = true
       </div>
 
       {/* Card name */}
-      <div className={`text-center font-semibold text-white mt-3 mb-1 truncate ${factionAccent[card.faction]}`}>
+      <div
+        className={`text-center font-semibold text-white mt-3 mb-1 leading-tight ${factionAccent[card.faction]} ${
+          card.name.length > 14 ? 'text-[8px]' : ''
+        }`}
+        title={card.name}
+        style={{ wordBreak: 'break-word', lineHeight: '1.1', maxHeight: '2.4em', overflow: 'hidden' }}
+      >
         {card.name}
       </div>
 
@@ -80,7 +98,8 @@ export default function Card({ card, size = 'medium', onClick, isPlayable = true
           {card.keywords.map((kw) => (
             <span
               key={kw}
-              className="px-1 py-0 rounded text-[8px] bg-slate-700 text-slate-300 capitalize"
+              className="px-1 py-0 rounded text-[8px] bg-slate-700 text-slate-300 capitalize cursor-help"
+              title={keywordDescriptions[kw] ?? kw}
             >
               {kw}
             </span>
@@ -98,13 +117,27 @@ export default function Card({ card, size = 'medium', onClick, isPlayable = true
   )
 }
 
+const factionAllyIcons: Record<string, string> = {
+  might: '\u2694\uFE0F',
+  wisdom: '\uD83D\uDD2E',
+  heart: '\uD83D\uDEE1\uFE0F',
+  neutral: '\u2726',
+}
+
+const factionSpellIcons: Record<string, string> = {
+  might: '\uD83D\uDD25',
+  wisdom: '\u2744\uFE0F',
+  heart: '\u2728',
+  neutral: '\uD83D\uDCA0',
+}
+
 function AllyStats({ card }: { card: AllyCard }) {
   return (
     <div className="flex flex-col items-center gap-1">
-      <div className="text-2xl">&#9876;</div>
-      <div className="flex gap-2 text-sm font-bold">
-        <span className="text-red-400">{card.attack}&#9876;</span>
-        <span className="text-green-400">{card.health}&#10084;</span>
+      <div className="text-2xl">{factionAllyIcons[card.faction] ?? '\u2694\uFE0F'}</div>
+      <div className="flex gap-3 text-sm font-bold">
+        <span className="text-red-400 flex items-center gap-0.5">{card.attack}<span className="text-[10px]">ATK</span></span>
+        <span className="text-green-400 flex items-center gap-0.5">{card.health}<span className="text-[10px]">HP</span></span>
       </div>
     </div>
   )
@@ -114,7 +147,7 @@ function SpellInfo({ card }: { card: SpellCard }) {
   const effectText = getEffectText(card)
   return (
     <div className="text-center px-1">
-      <div className="text-lg">&#10040;</div>
+      <div className="text-lg">{factionSpellIcons[card.faction] ?? '\u2728'}</div>
       <div className="text-slate-300 leading-tight">{effectText}</div>
     </div>
   )
@@ -123,7 +156,7 @@ function SpellInfo({ card }: { card: SpellCard }) {
 function GearInfo({ card }: { card: GearCard }) {
   return (
     <div className="text-center px-1 space-y-0.5">
-      <div className="text-lg">&#9881;</div>
+      <div className="text-lg">{'\u2699\uFE0F'}</div>
       <div className="text-green-400 leading-tight text-[9px]">{card.upside.description}</div>
       <div className="text-red-400 leading-tight text-[9px]">{card.downside.description}</div>
     </div>

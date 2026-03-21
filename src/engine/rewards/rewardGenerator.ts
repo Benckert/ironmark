@@ -91,7 +91,6 @@ export function generateGearReward(rng: SeededRNG): GearCard | null {
 }
 
 export function generateRelicReward(rng: SeededRNG): Relic {
-  // MVP: simple relic pool
   const relics: Relic[] = [
     {
       id: 'relic_warriors_pendant',
@@ -124,6 +123,38 @@ export function generateRelicReward(rng: SeededRNG): Relic {
       rarity: 'rare',
       effect: { description: '+2 max HP on win', type: 'bonus_max_hp_on_win', value: 2, trigger: 'passive' },
       artId: 'art_blood_chalice',
+    },
+    {
+      id: 'relic_iron_ring',
+      name: 'Iron Ring',
+      description: 'Start each combat with 2 armor.',
+      rarity: 'common',
+      effect: { description: '+2 starting armor', type: 'bonus_starting_armor', value: 2, trigger: 'on_combat_start' },
+      artId: 'art_iron_ring',
+    },
+    {
+      id: 'relic_ember_stone',
+      name: 'Ember Stone',
+      description: 'Your spells deal 1 extra damage.',
+      rarity: 'uncommon',
+      effect: { description: '+1 spell damage', type: 'bonus_spell_damage', value: 1, trigger: 'passive' },
+      artId: 'art_ember_stone',
+    },
+    {
+      id: 'relic_healer_charm',
+      name: "Healer's Charm",
+      description: 'Heal 3 HP at the end of each combat.',
+      rarity: 'common',
+      effect: { description: '+3 HP on combat end', type: 'heal_on_combat_end', value: 3, trigger: 'passive' },
+      artId: 'art_healer_charm',
+    },
+    {
+      id: 'relic_crystal_skull',
+      name: 'Crystal Skull',
+      description: 'Card rewards include an extra choice.',
+      rarity: 'rare',
+      effect: { description: '+1 reward choice', type: 'bonus_reward_choice', value: 1, trigger: 'passive' },
+      artId: 'art_crystal_skull',
     },
   ]
   return rng.pick(relics)

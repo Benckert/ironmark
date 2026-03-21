@@ -16,6 +16,27 @@
 | BAL-001 | P1 | Rebalance shop prices (cards, gear, removal, reroll) | Reduced all prices ~30-40% so first shop is usable |
 | BAL-002 | P1 | Increase combat/elite gold rewards | Combat 15-25g, Elite 25-40g |
 | UX-001 | P1 | Add upgrade preview on rest screen | Show before/after comparison when selecting a card |
+| BUG-002 | P0 | HP not persisting after combat | Fixed `onCombatEnd` to sync `combat.player.hp` back to `run.hp` |
+| BUG-003 | P1 | Combat starts at Turn 2 instead of Turn 1 | Moved first `startTurn()` into `initCombat` store action instead of component effect |
+| BUG-004 | P1 | Run summary stats all zero | Added `extractCombatStats()` and accumulate into RunState via `onCombatEnd` |
+| BUG-005 | P1 | Gear from events not equipped | All gear-granting paths (events, shop, rewards, gamble) now call `equipGear()` |
+| BUG-006 | P2 | React duplicate key errors on card lists | Fixed duplicate keys in RestScreen and ShopScreen with index-based suffixes |
+| UI-005 | P1 | Card names truncated across all screens | Replaced `truncate` with word-break wrapping in Card component |
+| UI-006 | P2 | Card rows overflow/clip at viewport edges | Added `overflow-x-auto`, `flex-wrap`, and responsive padding to card containers |
+| UI-007 | P3 | Unaffordable shop items lack visual indicator | Added `opacity-60 grayscale-[30%]` for unaffordable items |
+| UX-002 | P1 | Ally targeting — let player choose attack target | Added multi-step targeting flow with per-ally enemy selection UI |
+| UX-003 | P2 | Card tooltips — show keyword explanations on hover | Added `keywordDescriptions` with `title` tooltips on keyword badges |
+| UX-004 | P2 | Tutorial / onboarding flow | Added 6-step tutorial overlay with "How to Play" button on main menu |
+| UX-005 | P2 | Better feedback on card play (damage numbers, heal) | Added DamagePopup component with floating damage/heal numbers |
+| UI-001 | P2 | Map screen redesign | Redesigned with gradient background, radial decoration, HP color coding |
+| UI-002 | P2 | Card art / icons — replace placeholder text | Added faction-specific icons for allies and spells in Card component |
+| UI-003 | P2 | General UI polish — less "vibecoded" look | Consistent color palette, spacing, typography across combat/map screens |
+| UI-004 | P3 | Battle screen layout — board-style ally/enemy rows | Added labeled enemy/ally rows with VS divider in CombatScreen |
+| BAL-003 | P2 | Encounter difficulty tuning (Act 1 too hard?) | Reduced Bandit Thug, Orc Warrior, Stone Golem HP/attack values |
+| BAL-004 | P2 | Card balance pass — review all card stats | Buffed Ashblade Recruit attack, fixed Blood Frenzy target to all_allies |
+| BAL-005 | P3 | Relic balance and variety | Added 4 new relics: Iron Ring, Ember Stone, Healer's Charm, Crystal Skull |
+| FEAT-001 | P2 | Event system — more event variety | Added 5 new events (Ancient Forge, Goblin Gambler, Fallen Hero, Poisoned Spring, Mysterious Statue) |
+| FEAT-002 | P3 | Save/load run state to localStorage | Already implemented via Dexie DB with auto-save on map return and Continue Run button |
 
 ---
 
@@ -30,24 +51,3 @@
 
 | ID | Priority | Task | Notes |
 |----|----------|------|-------|
-| BUG-002 | P0 | HP not persisting after combat | Hero HP resets to max when returning to map; `onCombatEnd` in gameStore.ts doesn't sync `combat.player.hp` back to `run.hp` |
-| BUG-003 | P1 | Combat starts at Turn 2 instead of Turn 1 | Every combat shows "Turn 2" on first player action; likely double-increment in combatEngine.ts turn init |
-| BUG-004 | P1 | Run summary stats all zero | Defeat screen shows Turns/Damage/Cards/Enemies all as 0; combat stats not accumulated into run state |
-| BUG-005 | P1 | Gear from events not equipped | Event grants gear (e.g. Healing Salve) to `gearInventory` but never calls `equipGear`; combat slots stay empty |
-| BUG-006 | P2 | React duplicate key errors on card lists | Rest upgrade screen triggers "Encountered two children with the same key" for duplicate cards; need unique instance keys |
-| UI-005 | P1 | Card names truncated across all screens | "Ashblade Rec...", "Emberheart Knig...", "Divine Restor..." — card name overflow on hero selection, hand, shop, rest, rewards |
-| UI-006 | P2 | Card rows overflow/clip at viewport edges | Hero selection, Fate's Offer, and hand cards are clipped on left/right edges; needs responsive layout or horizontal scroll |
-| UI-007 | P3 | Unaffordable shop items lack visual indicator | Cards too expensive to buy appear identical to affordable ones (no grayed price or disabled state) |
-| UX-002 | P1 | Ally targeting — let player choose attack target | Currently auto-targets enemies[0]; needs target selection UI |
-| UX-003 | P2 | Card tooltips — show keyword explanations on hover | Strike, Deathblow, Echo, Ward, Taunt, Burn, Fury |
-| UX-004 | P2 | Tutorial / onboarding flow | First-run guidance for new players |
-| UX-005 | P2 | Better feedback on card play (damage numbers, heal) | Float numbers, flash effects |
-| UI-001 | P2 | Map screen redesign | Current map is functional but plain |
-| UI-002 | P2 | Card art / icons — replace placeholder text | Use generated pixel art or SVG icons |
-| UI-003 | P2 | General UI polish — less "vibecoded" look | Consistent color palette, spacing, typography |
-| UI-004 | P3 | Battle screen layout — board-style ally/enemy rows | Visual board with ally row vs enemy row |
-| BAL-003 | P2 | Encounter difficulty tuning (Act 1 too hard?) | Review enemy HP/damage scaling per floor |
-| BAL-004 | P2 | Card balance pass — review all card stats | Some cards may be dead picks |
-| BAL-005 | P3 | Relic balance and variety | Add more relics, tune existing ones |
-| FEAT-001 | P2 | Event system — more event variety | Only basic events exist currently |
-| FEAT-002 | P3 | Save/load run state to localStorage | Persist runs across browser sessions |

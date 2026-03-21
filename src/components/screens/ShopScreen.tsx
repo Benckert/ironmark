@@ -42,7 +42,7 @@ export default function ShopScreen({
         <div className="flex gap-4 justify-center">
           {shop.cards.map((item, i) => (
             <div key={item.item.id} className="flex flex-col items-center gap-2">
-              <div className={item.sold ? 'opacity-30 pointer-events-none' : ''}>
+              <div className={item.sold ? 'opacity-30 pointer-events-none' : !item.sold && gold < item.price ? 'opacity-60 grayscale-[30%]' : ''}>
                 <Card
                   card={item.item}
                   size="medium"
@@ -70,7 +70,7 @@ export default function ShopScreen({
         <div className="flex gap-4 justify-center">
           {shop.gear.map((item, i) => (
             <div key={item.item.id} className="flex flex-col items-center gap-2">
-              <div className={item.sold ? 'opacity-30 pointer-events-none' : ''}>
+              <div className={item.sold ? 'opacity-30 pointer-events-none' : !item.sold && gold < item.price ? 'opacity-60 grayscale-[30%]' : ''}>
                 <Card
                   card={item.item}
                   size="medium"
@@ -132,9 +132,9 @@ export default function ShopScreen({
           <div className="bg-slate-800 rounded-xl p-6 max-w-3xl max-h-[80vh] overflow-y-auto">
             <h2 className="text-xl font-bold text-slate-200 mb-4">Select a card to remove</h2>
             <div className="flex flex-wrap gap-3 justify-center mb-4">
-              {deck.map((card) => (
+              {deck.map((card, index) => (
                 <Card
-                  key={card.id}
+                  key={`${card.id}_${index}`}
                   card={card}
                   size="small"
                   isPlayable={true}

@@ -606,6 +606,73 @@ export function endPlayerTurn(state: CombatState, rng?: SeededRNG): CombatState 
   return { ...currentState, phase: 'enemy_phase' }
 }
 
+export function endPlayerTurnWithTargets(
+  state: CombatState,
+  allyTargets: Record<string, string>,
+  rng?: SeededRNG,
+): CombatState {
+  if (state.phase !== 'player_action') return state
+
+  let currentState = state
+
+  // Resolve ally attacks with player-chosen targets
+  for (const ally of currentState.allies) {
+    if (ally.currentHp <= 0 || ally.hasAttackedThisTurn) continue
+    if (currentState.enemies.length === 0) break
+
+    // Use player-chosen target, fallback to leftmost enemy
+    const targetId = allyTargets[ally.instanceId] ?? currentState.enemies[0]?.instanceId
+    const target = currentState.enemies.find((e) => e.instanceId === targetId && e.hp > 0)
+    if (!target) {
+      // Fallback to first alive enemy
+      const fallback = currentState.enemies.find((e) => e.hp > 0)
+      if (!fallback) break
+      const { state: afterDamage } = dealDamageToEnemy(currentState, fallback.instanceId, ally.currentAttack, ally.card.name)
+      currentState = afterDamage
+      currentState = resolveStrike(currentState, ally, fallback.instanceId, rng)
+    } else {
+      const { state: afterDamage } = dealDamageToEnemy(currentState, target.instanceId, ally.currentAttack, ally.card.name)
+      currentState = afterDamage
+      currentState = resolveStrike(currentState, ally, target.instanceId, rng)
+    }
+
+    // Mark as attacked
+    const allyIndex = currentState.allies.findIndex((a) => a.instanceId === ally.instanceId)
+    if (allyIndex !== -1) {
+      const allies = [...currentState.allies]
+      allies[allyIndex] = { ...allies[allyIndex], hasAttackedThisTurn: true }
+      currentState = { ...currentState, allies }
+    }
+
+    const { state: afterRemove } = removeDeadEnemies(currentState)
+    currentState = afterRemove
+  }
+
+  // Remove dead allies and resolve deathblows
+  const { state: afterAllyDeath, deadAllies } = removeDeadAllies(currentState)
+  currentState = afterAllyDeath
+  for (const deadAlly of deadAllies) {
+    currentState = resolveDeathblow(currentState, deadAlly, rng)
+  }
+
+  if (currentState.enemies.length === 0) {
+    return { ...currentState, result: 'victory', phase: 'combat_over' }
+  }
+
+  currentState = applyGearEndOfTurn(currentState)
+
+  // Orin's passive
+  if (currentState.player.heroId === 'hero_orin' && currentState.allies.length > 0) {
+    const lowestAlly = [...currentState.allies].sort((a, b) => a.currentHp - b.currentHp)[0]
+    if (lowestAlly) {
+      currentState = healAlly(currentState, lowestAlly.instanceId, 2)
+    }
+  }
+
+  currentState = discardHand(currentState)
+  return { ...currentState, phase: 'enemy_phase' }
+}
+
 export function executeEnemyPhase(state: CombatState, rng?: SeededRNG): CombatState {
   if (state.phase !== 'enemy_phase') return state
 
@@ -645,6 +712,44 @@ export function executeEnemyPhase(state: CombatState, rng?: SeededRNG): CombatSt
   }
 
   return { ...currentState, phase: 'turn_end' }
+}
+
+export interface CombatStats {
+  turnsPlayed: number
+  damageDealt: number
+  damageReceived: number
+  cardsPlayed: number
+  enemiesKilled: number
+}
+
+export function extractCombatStats(state: CombatState, initialEnemyCount: number): CombatStats {
+  let damageDealt = 0
+  let damageReceived = 0
+  let cardsPlayed = 0
+
+  for (const entry of state.log) {
+    if (entry.action === 'play_card' && entry.target !== 'Hero' && entry.value) {
+      damageDealt += entry.value
+    }
+    if (entry.action === 'play_card' && entry.source === 'Player') {
+      cardsPlayed++
+    }
+    if (entry.action === 'enemy_action' && entry.target === 'Hero' && entry.value) {
+      damageReceived += entry.value
+    }
+  }
+
+  // Enemies killed = initial count minus surviving enemies
+  const survivingEnemies = state.enemies.filter((e) => e.hp > 0).length
+  const enemiesKilled = initialEnemyCount - survivingEnemies
+
+  return {
+    turnsPlayed: state.turn,
+    damageDealt,
+    damageReceived,
+    cardsPlayed,
+    enemiesKilled,
+  }
 }
 
 export function checkCombatEnd(state: CombatState): CombatState {
