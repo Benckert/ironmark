@@ -15,8 +15,8 @@ describe('shopGenerator', () => {
       const rng = new SeededRNG('price-test')
       const shop = generateShop('wisdom', 0, 0, rng)
       for (const item of shop.cards) {
-        expect(item.price).toBeGreaterThanOrEqual(25)
-        expect(item.price).toBeLessThanOrEqual(100)
+        expect(item.price).toBeGreaterThanOrEqual(15)
+        expect(item.price).toBeLessThanOrEqual(80)
         expect(item.sold).toBe(false)
       }
     })
@@ -25,8 +25,8 @@ describe('shopGenerator', () => {
       const rng = new SeededRNG('gear-price')
       const shop = generateShop('heart', 0, 0, rng)
       for (const item of shop.gear) {
-        expect(item.price).toBeGreaterThanOrEqual(40)
-        expect(item.price).toBeLessThanOrEqual(120)
+        expect(item.price).toBeGreaterThanOrEqual(25)
+        expect(item.price).toBeLessThanOrEqual(95)
         expect(item.sold).toBe(false)
       }
     })
@@ -34,25 +34,25 @@ describe('shopGenerator', () => {
     it('card removal cost escalates', () => {
       const rng = new SeededRNG('removal')
       const shop0 = generateShop('might', 0, 0, rng)
-      expect(shop0.cardRemovalCost).toBe(50)
+      expect(shop0.cardRemovalCost).toBe(35)
 
       const rng2 = new SeededRNG('removal2')
       const shop1 = generateShop('might', 1, 0, rng2)
-      expect(shop1.cardRemovalCost).toBe(75)
+      expect(shop1.cardRemovalCost).toBe(50)
 
       const rng3 = new SeededRNG('removal3')
       const shop2 = generateShop('might', 2, 0, rng3)
-      expect(shop2.cardRemovalCost).toBe(100)
+      expect(shop2.cardRemovalCost).toBe(65)
     })
 
     it('reroll cost escalates', () => {
       const rng = new SeededRNG('reroll')
       const shop0 = generateShop('might', 0, 0, rng)
-      expect(shop0.rerollCost).toBe(10)
+      expect(shop0.rerollCost).toBe(5)
 
       const rng2 = new SeededRNG('reroll2')
       const shop1 = generateShop('might', 0, 1, rng2)
-      expect(shop1.rerollCost).toBe(20)
+      expect(shop1.rerollCost).toBe(10)
     })
 
     it('no duplicate cards', () => {
@@ -122,8 +122,8 @@ describe('shopGenerator', () => {
       const result = buyCardRemoval(shop, 100)
 
       expect(result).not.toBeNull()
-      expect(result!.newGold).toBe(50)
-      expect(result!.newCardRemovalCost).toBe(75)
+      expect(result!.newGold).toBe(65)
+      expect(result!.newCardRemovalCost).toBe(50)
     })
 
     it('returns null if not enough gold', () => {

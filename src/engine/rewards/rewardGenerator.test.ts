@@ -41,21 +41,21 @@ describe('rewardGenerator', () => {
   })
 
   describe('generateGoldReward', () => {
-    it('normal combat gives 10-20 gold', () => {
+    it('normal combat gives 15-25 gold', () => {
       const rng = new SeededRNG('gold-test')
       for (let i = 0; i < 100; i++) {
         const gold = generateGoldReward('combat', rng)
-        expect(gold).toBeGreaterThanOrEqual(10)
-        expect(gold).toBeLessThanOrEqual(20)
+        expect(gold).toBeGreaterThanOrEqual(15)
+        expect(gold).toBeLessThanOrEqual(25)
       }
     })
 
-    it('elite gives 20-35 gold', () => {
+    it('elite gives 25-40 gold', () => {
       const rng = new SeededRNG('elite-gold')
       for (let i = 0; i < 100; i++) {
         const gold = generateGoldReward('elite', rng)
-        expect(gold).toBeGreaterThanOrEqual(20)
-        expect(gold).toBeLessThanOrEqual(35)
+        expect(gold).toBeGreaterThanOrEqual(25)
+        expect(gold).toBeLessThanOrEqual(40)
       }
     })
 

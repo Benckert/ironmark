@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import type { Card as CardType } from '@engine/types/card.ts'
+import { upgradeCard } from '@engine/cards/deckManager.ts'
 import Card from '../cards/Card.tsx'
 
 interface RestScreenProps {
@@ -26,6 +27,13 @@ export default function RestScreen({
   const [choiceMade, setChoiceMade] = useState(false)
   const [choiceResult, setChoiceResult] = useState('')
   const [showDeck, setShowDeck] = useState<'upgrade' | 'remove' | null>(null)
+  const [previewCardId, setPreviewCardId] = useState<string | null>(null)
+
+  const previewUpgraded = useMemo(() => {
+    if (!previewCardId) return null
+    const upgraded = upgradeCard(deck, previewCardId)
+    return upgraded.find((c) => c.id === previewCardId) ?? null
+  }, [previewCardId, deck])
 
   const handleHeal = () => {
     onHeal()
@@ -120,28 +128,50 @@ export default function RestScreen({
 
       {/* Deck viewer for upgrade/remove */}
       {showDeck && (
-        <div className="w-full max-w-3xl">
+        <div className="w-full max-w-4xl">
           <h2 className="text-lg font-semibold text-slate-300 mb-4 text-center">
             {showDeck === 'upgrade' ? 'Select a card to upgrade' : 'Select a card to remove'}
           </h2>
           <div className="flex flex-wrap gap-3 justify-center mb-4">
             {(showDeck === 'upgrade' ? upgradableCards : deck).map((card) => (
-              <Card
+              <div
                 key={card.id}
-                card={card}
-                size="small"
-                isPlayable={true}
-                onClick={() =>
-                  showDeck === 'upgrade'
-                    ? handleSelectCardForUpgrade(card)
-                    : handleSelectCardForRemove(card)
-                }
-              />
+                onMouseEnter={() => showDeck === 'upgrade' ? setPreviewCardId(card.id) : undefined}
+                onMouseLeave={() => setPreviewCardId(null)}
+              >
+                <Card
+                  card={card}
+                  size="small"
+                  isPlayable={true}
+                  isSelected={previewCardId === card.id}
+                  onClick={() =>
+                    showDeck === 'upgrade'
+                      ? handleSelectCardForUpgrade(card)
+                      : handleSelectCardForRemove(card)
+                  }
+                />
+              </div>
             ))}
           </div>
+
+          {/* Upgrade preview */}
+          {showDeck === 'upgrade' && previewCardId && previewUpgraded && (
+            <div className="flex items-center justify-center gap-6 mb-4 p-4 bg-slate-800/50 rounded-xl border border-slate-700">
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-xs text-slate-500 uppercase tracking-wide">Current</span>
+                <Card card={deck.find((c) => c.id === previewCardId)!} size="medium" />
+              </div>
+              <div className="text-2xl text-blue-400 font-bold">{'\u2192'}</div>
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-xs text-blue-400 uppercase tracking-wide">Upgraded</span>
+                <Card card={previewUpgraded} size="medium" />
+              </div>
+            </div>
+          )}
+
           <div className="flex justify-center">
             <button
-              onClick={() => setShowDeck(null)}
+              onClick={() => { setShowDeck(null); setPreviewCardId(null) }}
               className="px-6 py-2 bg-slate-700 text-slate-300 rounded-lg hover:bg-slate-600 transition-colors"
             >
               Back
