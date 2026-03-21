@@ -1,0 +1,348 @@
+[
+  {
+    "id": "event_s3_void_rift",
+    "name": "The Void Rift",
+    "narrative": "Reality tears open before you, revealing a wound in the fabric of existence. Through the rift, you glimpse impossible geometries and colors that have no name. Something on the other side sees you too — and reaches out with an offering.",
+    "choices": [
+      {
+        "label": "Reach through",
+        "description": "Accept the offering from beyond. Gain immense power at terrible cost.",
+        "outcome": {
+          "description": "Your hand passes through the rift and returns clutching something that shouldn't exist. Your mind reels from the contact.",
+          "effects": [
+            { "type": "add_card", "cardRarity": "rare" },
+            { "type": "add_gear", "cardRarity": "rare" },
+            { "type": "damage", "value": 15 },
+            { "type": "add_curse" }
+          ]
+        }
+      },
+      {
+        "label": "Seal the rift",
+        "description": "Pour your life force into closing the wound. Sacrifice 12 HP to prevent catastrophe.",
+        "outcome": {
+          "description": "The rift screams as it collapses. Reality stabilizes, and the residual energy hardens into gold around your feet.",
+          "effects": [
+            { "type": "damage", "value": 12 },
+            { "type": "gold", "value": 80 }
+          ]
+        }
+      },
+      {
+        "label": "Step through",
+        "description": "Enter the void entirely. You may not return as you were.",
+        "outcome": {
+          "description": "The void reshapes you. You emerge somewhere else entirely, changed in ways you can't articulate.",
+          "effects": [
+            { "type": "skip_node" },
+            { "type": "max_hp", "value": -5 },
+            { "type": "add_card", "cardRarity": "rare" }
+          ]
+        }
+      }
+    ],
+    "artId": "art_void_rift"
+  },
+  {
+    "id": "event_s3_dead_god",
+    "name": "The Corpse of a God",
+    "narrative": "You stand in the ribcage of something divine. Bones the size of towers arch overhead, still radiating fading warmth. The god's heart — a crystallized sphere of pure energy — rests in a crater at the center, cracked but pulsing. Worshippers would kill for a fragment. You could take the whole thing.",
+    "choices": [
+      {
+        "label": "Take the heart",
+        "description": "Claim the divine heart. Its power is beyond mortal comprehension.",
+        "outcome": {
+          "description": "The heart sears your hands as you lift it. Divine energy rewrites your very being — but mortality strains under the weight.",
+          "effects": [
+            { "type": "max_hp", "value": 15 },
+            { "type": "damage", "value": 12 },
+            { "type": "add_curse" }
+          ]
+        }
+      },
+      {
+        "label": "Harvest fragments",
+        "description": "Chip away pieces of the heart. Safer, but less rewarding.",
+        "outcome": {
+          "description": "Each fragment hums with residual divinity. Merchants and scholars would pay fortunes for these.",
+          "effects": [
+            { "type": "gold", "value": 75 },
+            { "type": "heal", "value": 10 }
+          ]
+        }
+      },
+      {
+        "label": "Pray to the remains",
+        "description": "Kneel before the dead god and offer reverence. Perhaps death is not the end for divinity.",
+        "outcome": {
+          "description": "A whisper echoes from nowhere: 'You are seen.' Knowledge floods your mind — the path ahead is laid bare.",
+          "effects": [
+            { "type": "reveal_map" },
+            { "type": "add_card", "cardRarity": "rare" }
+          ]
+        }
+      }
+    ],
+    "artId": "art_dead_god"
+  },
+  {
+    "id": "event_s3_soul_forge",
+    "name": "The Soul Forge",
+    "narrative": "This is no ordinary forge. Ghostly chains dangle from the ceiling, each binding a wailing spirit above a crucible of liquid starlight. A sign carved in ancient script reads: 'Feed the forge what you are. Receive what you could become.'",
+    "choices": [
+      {
+        "label": "Sacrifice HP for power",
+        "description": "Offer 15 HP to the forge. It will reshape your potential.",
+        "outcome": {
+          "description": "Your essence burns in the crucible. What emerges is sharper, deadlier, and forged in suffering.",
+          "effects": [
+            { "type": "damage", "value": 15 },
+            { "type": "add_card", "cardRarity": "rare" },
+            { "type": "add_gear", "cardRarity": "rare" }
+          ]
+        }
+      },
+      {
+        "label": "Sacrifice gold for resilience",
+        "description": "Pour 60 gold into the crucible. The forge will temper your body.",
+        "outcome": {
+          "description": "Liquid starlight washes over you. Your body feels like iron, your wounds knitting closed.",
+          "effects": [
+            { "type": "gold", "value": -60 },
+            { "type": "max_hp", "value": 12 },
+            { "type": "heal", "value": 20 }
+          ]
+        }
+      },
+      {
+        "label": "Free the spirits",
+        "description": "Shatter the chains and release the trapped souls. The forge will go dark.",
+        "outcome": {
+          "description": "The spirits scatter into light, each one pressing a grateful gift into your hands as they vanish.",
+          "effects": [
+            { "type": "remove_card" },
+            { "type": "gold", "value": 40 },
+            { "type": "heal", "value": 15 }
+          ]
+        }
+      }
+    ],
+    "artId": "art_soul_forge"
+  },
+  {
+    "id": "event_s3_echo_chamber",
+    "name": "The Echo Chamber",
+    "narrative": "You enter a vast spherical chamber where sound behaves impossibly. Your footsteps arrive before you take them. Your voice answers questions you haven't asked. At the center, a temporal anomaly swirls — a window to moments yet to come and long since passed.",
+    "choices": [
+      {
+        "label": "Glimpse the future",
+        "description": "Look through the anomaly to see what awaits. Knowledge is power.",
+        "outcome": {
+          "description": "You witness the horrors ahead. The knowledge is invaluable — but the visions leave scars on your psyche.",
+          "effects": [
+            { "type": "reveal_map" },
+            { "type": "damage", "value": 8 }
+          ]
+        }
+      },
+      {
+        "label": "Reach into the past",
+        "description": "Pull something from a time when heroes still walked these halls.",
+        "outcome": {
+          "description": "Your hand closes around a weapon from an age of legends. It feels impossibly light and impossibly sharp.",
+          "effects": [
+            { "type": "add_gear", "cardRarity": "rare" },
+            { "type": "max_hp", "value": -4 }
+          ]
+        }
+      },
+      {
+        "label": "Collapse the anomaly",
+        "description": "Overload the temporal rift. The resulting explosion might catapult you forward.",
+        "outcome": {
+          "description": "Time shatters around you. When you regain your senses, the dungeon around you is different. You've jumped ahead.",
+          "effects": [
+            { "type": "skip_node" },
+            { "type": "damage", "value": 10 }
+          ]
+        }
+      }
+    ],
+    "artId": "art_echo_chamber"
+  },
+  {
+    "id": "event_s3_throne_of_chains",
+    "name": "The Throne of Chains",
+    "narrative": "A throne of black iron sits atop a dais, draped in chains that writhe like living things. The previous occupant is a desiccated husk slumped to one side. The throne whispers promises of dominion — if you dare sit.",
+    "choices": [
+      {
+        "label": "Sit on the throne",
+        "description": "Claim the throne's power. The chains will bind you, but the strength is immense.",
+        "outcome": {
+          "description": "Chains lash around your limbs as dark energy surges through you. When they release, you are more and less than you were.",
+          "effects": [
+            { "type": "add_card", "cardRarity": "rare" },
+            { "type": "max_hp", "value": 10 },
+            { "type": "add_curse" },
+            { "type": "add_curse" }
+          ]
+        }
+      },
+      {
+        "label": "Loot the previous king",
+        "description": "Search the desiccated corpse. Whatever killed them left their possessions intact.",
+        "outcome": {
+          "description": "The husk crumbles at your touch, revealing a crown of dark gold and a pouch heavy with coin.",
+          "effects": [
+            { "type": "gold", "value": 70 },
+            { "type": "add_gear", "cardRarity": "uncommon" }
+          ]
+        }
+      },
+      {
+        "label": "Destroy the throne",
+        "description": "Shatter the throne and break its cycle of corruption. A selfless act — but not without reward.",
+        "outcome": {
+          "description": "The chains scream as the throne splinters. Purified energy washes through the chamber, mending your wounds and cleansing your deck.",
+          "effects": [
+            { "type": "heal", "value": 25 },
+            { "type": "remove_card" }
+          ]
+        }
+      }
+    ],
+    "artId": "art_throne_of_chains"
+  },
+  {
+    "id": "event_s3_eldritch_merchant",
+    "name": "The Eldritch Merchant",
+    "narrative": "A figure with too many arms and a face that shifts like oil on water materializes from the shadows. \"I deal in absolutes,\" it says, each word arriving from a different direction. \"Health for power. Power for health. Or everything for everything.\" It gestures to three floating orbs.",
+    "choices": [
+      {
+        "label": "Health for power",
+        "description": "Sacrifice 20 max HP. Receive the merchant's finest wares.",
+        "outcome": {
+          "description": "Your body withers as the merchant's orb descends into your hands. Inside: weapons of impossible craft.",
+          "effects": [
+            { "type": "max_hp", "value": -20 },
+            { "type": "add_card", "cardRarity": "rare" },
+            { "type": "add_card", "cardRarity": "rare" }
+          ]
+        }
+      },
+      {
+        "label": "Power for health",
+        "description": "Surrender your strongest card. The merchant restores you completely.",
+        "outcome": {
+          "description": "The merchant plucks something from your deck with a satisfied hiss. In return, vitality floods through you.",
+          "effects": [
+            { "type": "remove_card" },
+            { "type": "heal", "value": 30 },
+            { "type": "max_hp", "value": 8 }
+          ]
+        }
+      },
+      {
+        "label": "Everything for everything",
+        "description": "Pay 50 gold and 10 HP. Receive a complete transformation.",
+        "outcome": {
+          "description": "The merchant laughs — a sound like breaking glass. Pain and fortune wash over you in equal measure.",
+          "effects": [
+            { "type": "gold", "value": -50 },
+            { "type": "damage", "value": 10 },
+            { "type": "add_gear", "cardRarity": "rare" },
+            { "type": "add_card", "cardRarity": "rare" }
+          ]
+        }
+      }
+    ],
+    "artId": "art_eldritch_merchant"
+  },
+  {
+    "id": "event_s3_memory_pool",
+    "name": "The Memory Pool",
+    "narrative": "A pool of liquid silver fills a cavern untouched by corruption. Images flicker across its surface — battles fought, allies lost, paths not taken. The pool offers to let you shed what holds you back, or reclaim what you've lost. But every exchange demands balance.",
+    "choices": [
+      {
+        "label": "Shed weakness",
+        "description": "Let the pool dissolve your weakest cards. Remove two cards from your deck.",
+        "outcome": {
+          "description": "You plunge your hands into the silver. Memories of failure dissolve — and with them, the dead weight in your deck.",
+          "effects": [
+            { "type": "remove_card" },
+            { "type": "remove_card" }
+          ]
+        }
+      },
+      {
+        "label": "Reclaim vitality",
+        "description": "Submerge yourself and let the pool restore what the dungeon has taken.",
+        "outcome": {
+          "description": "The silver closes over your head. When you surface, every wound is gone and your body feels renewed.",
+          "effects": [
+            { "type": "heal", "value": 30 },
+            { "type": "max_hp", "value": 5 }
+          ]
+        }
+      },
+      {
+        "label": "Drink the pool dry",
+        "description": "Consume every drop. The power will be overwhelming — and so will the consequence.",
+        "outcome": {
+          "description": "Raw memory floods your mind. You gain everything the pool held — but your body buckles under the strain.",
+          "effects": [
+            { "type": "add_card", "cardRarity": "rare" },
+            { "type": "add_gear", "cardRarity": "rare" },
+            { "type": "gold", "value": 50 },
+            { "type": "damage", "value": 20 }
+          ]
+        }
+      }
+    ],
+    "artId": "art_memory_pool"
+  },
+  {
+    "id": "event_s3_final_altar",
+    "name": "The Final Altar",
+    "narrative": "At the edge of oblivion stands an altar carved from a single slab of obsidian. Three grooves are cut into its surface — one shaped like a coin, one like a drop of blood, and one like a human heart. The inscription reads: 'The last offering determines the ending.'",
+    "choices": [
+      {
+        "label": "Offer gold",
+        "description": "Place 80 gold on the altar. Wealth buys passage even here.",
+        "outcome": {
+          "description": "The gold melts into the groove and the altar hums. A cache of powerful equipment materializes before you.",
+          "effects": [
+            { "type": "gold", "value": -80 },
+            { "type": "add_gear", "cardRarity": "rare" },
+            { "type": "add_gear", "cardRarity": "rare" }
+          ]
+        }
+      },
+      {
+        "label": "Offer blood",
+        "description": "Sacrifice 18 HP. Pain is the oldest currency.",
+        "outcome": {
+          "description": "Your blood fills the groove and ignites. The altar grants you techniques born from suffering.",
+          "effects": [
+            { "type": "damage", "value": 18 },
+            { "type": "add_card", "cardRarity": "rare" },
+            { "type": "add_card", "cardRarity": "rare" },
+            { "type": "max_hp", "value": 8 }
+          ]
+        }
+      },
+      {
+        "label": "Offer nothing",
+        "description": "Refuse the altar. Walk past it with what you have. You are enough.",
+        "outcome": {
+          "description": "The altar falls silent. Nothing happens — but you feel a quiet certainty settle in your bones. You are ready.",
+          "effects": [
+            { "type": "heal", "value": 15 },
+            { "type": "remove_card" }
+          ]
+        }
+      }
+    ],
+    "artId": "art_final_altar"
+  }
+]

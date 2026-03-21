@@ -58,7 +58,17 @@ export default function Card({ card, size = 'medium', onClick, isPlayable = true
 
   return (
     <div
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      aria-label={`${card.name}, ${card.type} card, cost ${displayCost}`}
+      aria-pressed={isSelected}
       onClick={isPlayable ? onClick : undefined}
+      onKeyDown={isPlayable && onClick ? (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          onClick()
+        }
+      } : undefined}
       className={`
         relative rounded-lg border-2 ${rarityBorderColor[card.rarity]}
         ${factionColor[card.faction]}
@@ -66,7 +76,7 @@ export default function Card({ card, size = 'medium', onClick, isPlayable = true
         ${isPlayable ? 'cursor-pointer hover:scale-105 hover:-translate-y-2' : 'opacity-50 cursor-not-allowed'}
         ${isSelected ? 'ring-2 ring-white scale-105 -translate-y-3' : ''}
         ${card.rarity !== 'common' ? `shadow-lg ${rarityGlow[card.rarity]}` : ''}
-        transition-all duration-200 flex flex-col p-1.5 select-none overflow-hidden
+        transition-all duration-200 flex flex-col p-1.5 select-none overflow-hidden focus:outline-2 focus:outline-amber-400 focus:outline-offset-2
       `}
     >
       {/* Mana cost */}

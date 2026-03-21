@@ -71,6 +71,7 @@ function makeRunState(deck: Card[] = []): RunState {
   return {
     seed: 'test-seed',
     phase: 'combat',
+    stage: 1,
     hero: {
       id: 'hero_kael',
       name: 'Kael',

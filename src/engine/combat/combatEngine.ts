@@ -1,43 +1,29 @@
-import type { Card, AllyCard, SpellCard, GearCard } from '@engine/types/card.ts'
+import type { Card } from '@engine/types/card.ts'
 import type {
   CombatState,
-  AllyInstance,
-  EnemyInstance,
   PlayerState,
 } from '@engine/types/combat.ts'
 import type { EnemyTemplate } from '@engine/types/enemy.ts'
 import type { RunState } from '@engine/types/run.ts'
 import { SeededRNG } from '../../utils/random.ts'
-import { drawCardsWithRng, discardHand } from '../cards/deckManager.ts'
+import { drawCardsWithRng } from '../cards/deckManager.ts'
 import {
-  dealDamageToEnemy,
-  healHero,
-  healAlly,
-  addArmorToHero,
-} from './damageResolver.ts'
-import {
-  resolveStrike,
-  resolveDeathblow,
-  resolveEcho,
-  applyStatusToEnemy,
   tickStatuses,
   removeDeadEnemies,
   removeDeadAllies,
 } from './keywordResolver.ts'
 import {
-  advanceEnemyIntent,
-  executeEnemyIntent,
-} from '../encounters/enemyAI.ts'
-import {
   applyGearStartOfTurn,
-  applyGearEndOfTurn,
   getBonusDrawFromGear,
   getSpellCostModifier,
-  getSpellDamageBonus,
 } from '../cards/gearManager.ts'
 
+// Re-export from split modules for backwards compatibility
+export { playCard } from './cardResolver.ts'
+export { useHeroPower, endPlayerTurn, endPlayerTurnWithTargets, executeEnemyPhase } from './turnResolver.ts'
+
 let instanceCounter = 0
-function nextInstanceId(): string {
+export function nextInstanceId(): string {
   return `inst_${++instanceCounter}`
 }
 
@@ -45,7 +31,7 @@ export function resetInstanceCounter(): void {
   instanceCounter = 0
 }
 
-export function createEnemyInstance(template: EnemyTemplate): EnemyInstance {
+export function createEnemyInstance(template: EnemyTemplate): import('@engine/types/combat.ts').EnemyInstance {
   return {
     instanceId: nextInstanceId(),
     enemyId: template.id,
@@ -68,7 +54,6 @@ export function initializeCombat(
 ): CombatState {
   const enemies = enemyTemplates.map(createEnemyInstance)
 
-  // Separate deck into non-gear cards (gear is in inventory, not deck)
   const deckCards = runState.deck.filter((c) => c.type !== 'gear')
   const shuffledDeck = rng.shuffle(deckCards)
 
@@ -85,7 +70,7 @@ export function initializeCombat(
     statuses: [],
   }
 
-  const state: CombatState = {
+  return {
     turn: 0,
     phase: 'turn_start',
     result: 'ongoing',
@@ -98,8 +83,6 @@ export function initializeCombat(
     graveyard: [],
     log: [],
   }
-
-  return state
 }
 
 export function startTurn(state: CombatState, rng: SeededRNG): CombatState {
@@ -116,7 +99,7 @@ export function startTurn(state: CombatState, rng: SeededRNG): CombatState {
       ...state.player,
       mana: maxMana,
       maxMana: maxMana,
-      armor: 0, // Armor resets each turn
+      armor: 0,
       heroPowerUsedThisTurn: false,
     },
     allies: state.allies.map((a) => ({ ...a, hasAttackedThisTurn: false })),
@@ -135,7 +118,6 @@ export function startTurn(state: CombatState, rng: SeededRNG): CombatState {
   const { state: afterAllyDeath } = removeDeadAllies(afterEnemyDeath)
   currentState = afterAllyDeath
 
-  // Check if all enemies died from status ticks
   if (currentState.enemies.length === 0) {
     return { ...currentState, result: 'victory', phase: 'combat_over' }
   }
@@ -180,7 +162,6 @@ export function canPlayCard(state: CombatState, card: Card): boolean {
       (g) => g.downside.type === 'limit_allies_per_turn',
     )
     if (limitGear) {
-      // Count allies played this turn from log
       const alliesPlayedThisTurn = state.log.filter(
         (entry) =>
           entry.turn === state.turn &&
@@ -193,525 +174,10 @@ export function canPlayCard(state: CombatState, card: Card): boolean {
 
   // Max 4 allies on board
   if (card.type === 'ally' && state.allies.length >= 4) {
-    return false // Would need to sacrifice one — handled separately
+    return false
   }
 
   return true
-}
-
-export function playCard(
-  state: CombatState,
-  cardId: string,
-  targetId?: string,
-  rng?: SeededRNG,
-): CombatState {
-  const cardIndex = state.hand.findIndex((c) => c.id === cardId)
-  if (cardIndex === -1) return state
-
-  const card = state.hand[cardIndex]
-  if (!canPlayCard(state, card)) return state
-
-  const cost = getEffectiveCost(card, state)
-  let currentState: CombatState = {
-    ...state,
-    player: { ...state.player, mana: state.player.mana - cost },
-    hand: state.hand.filter((_, i) => i !== cardIndex),
-  }
-
-  switch (card.type) {
-    case 'ally':
-      currentState = playAllyCard(currentState, card as AllyCard)
-      break
-    case 'spell':
-      currentState = playSpellCard(currentState, card as SpellCard, targetId, rng)
-      break
-    case 'gear':
-      currentState = playGearCard(currentState, card as GearCard)
-      break
-  }
-
-  // Log
-  currentState = {
-    ...currentState,
-    log: [
-      ...currentState.log,
-      {
-        turn: currentState.turn,
-        action: 'play_card',
-        source: 'Player',
-        description: `Player plays ${card.type}: ${card.name}`,
-      },
-    ],
-  }
-
-  // Check for enemy deaths
-  const { state: afterDeath } = removeDeadEnemies(currentState)
-  currentState = afterDeath
-
-  // Resolve deathblows for dead allies
-  const { state: afterAllyDeath, deadAllies } = removeDeadAllies(currentState)
-  currentState = afterAllyDeath
-  for (const deadAlly of deadAllies) {
-    currentState = resolveDeathblow(currentState, deadAlly, rng)
-  }
-
-  // Check victory
-  if (currentState.enemies.length === 0) {
-    return { ...currentState, result: 'victory', phase: 'combat_over' }
-  }
-
-  return currentState
-}
-
-function playAllyCard(state: CombatState, card: AllyCard): CombatState {
-  const ally: AllyInstance = {
-    instanceId: nextInstanceId(),
-    card,
-    currentHp: card.health,
-    currentAttack: card.attack,
-    statuses: card.keywords.includes('ward')
-      ? [{ type: 'ward', stacks: 1 }]
-      : [],
-    hasAttackedThisTurn: false,
-  }
-
-  // Kael's passive: allies gain +1 attack this turn
-  if (state.player.heroId === 'hero_kael') {
-    ally.currentAttack += 1
-  }
-
-  // Gear: buff ally attack
-  for (const gear of state.player.equippedGear) {
-    if (gear.upside.type === 'buff_ally_attack') {
-      ally.currentAttack += gear.upside.value
-    }
-    if (gear.downside.type === 'reduce_ally_health') {
-      ally.currentHp = Math.max(1, ally.currentHp - gear.downside.value)
-    }
-    if (gear.upside.type === 'buff_ally_health') {
-      ally.currentHp += gear.upside.value
-    }
-  }
-
-  return {
-    ...state,
-    allies: [...state.allies, ally],
-  }
-}
-
-function playSpellCard(state: CombatState, card: SpellCard, targetId?: string, rng?: SeededRNG): CombatState {
-  let currentState = state
-  const spellDamageBonus = getSpellDamageBonus(currentState.player.equippedGear)
-  const effect = card.effect
-
-  switch (effect.type) {
-    case 'damage': {
-      const damage = effect.value + spellDamageBonus
-      if (card.targetType === 'all_enemies') {
-        for (const enemy of [...currentState.enemies]) {
-          if (enemy.hp > 0) {
-            const { state: newState } = dealDamageToEnemy(
-              currentState,
-              enemy.instanceId,
-              damage,
-              card.name,
-            )
-            currentState = newState
-          }
-        }
-        // Apply burn keyword if present
-        if (card.keywords.includes('burn')) {
-          for (const enemy of currentState.enemies) {
-            if (enemy.hp > 0) {
-              currentState = applyStatusToEnemy(currentState, enemy.instanceId, {
-                type: 'burn',
-                stacks: 1,
-              })
-            }
-          }
-        }
-      } else if (targetId) {
-        const { state: newState } = dealDamageToEnemy(
-          currentState,
-          targetId,
-          damage,
-          card.name,
-        )
-        currentState = newState
-        // Apply burn
-        if (card.keywords.includes('burn')) {
-          currentState = applyStatusToEnemy(currentState, targetId, {
-            type: 'burn',
-            stacks: 2,
-          })
-        }
-      }
-      break
-    }
-
-    case 'heal': {
-      if (card.targetType === 'self') {
-        currentState = healHero(currentState, effect.value, card.name)
-      } else if (card.targetType === 'single_ally' && targetId) {
-        currentState = healAlly(currentState, targetId, effect.value)
-      } else if (card.targetType === 'all_allies') {
-        for (const ally of currentState.allies) {
-          currentState = healAlly(currentState, ally.instanceId, effect.value)
-        }
-      }
-      break
-    }
-
-    case 'draw': {
-      if (rng) {
-        currentState = drawCardsWithRng(currentState, effect.value, rng)
-      }
-      break
-    }
-
-    case 'armor': {
-      currentState = addArmorToHero(currentState, effect.value)
-      break
-    }
-
-    case 'apply_status': {
-      if (effect.statusType) {
-        if (card.targetType === 'single_enemy' && targetId) {
-          currentState = applyStatusToEnemy(currentState, targetId, {
-            type: effect.statusType,
-            stacks: effect.value,
-          })
-        } else if (card.targetType === 'all_allies') {
-          for (const ally of currentState.allies) {
-            const statuses = [...ally.statuses, { type: effect.statusType, stacks: effect.value }]
-            const allyIndex = currentState.allies.findIndex(
-              (a) => a.instanceId === ally.instanceId,
-            )
-            const allies = [...currentState.allies]
-            allies[allyIndex] = { ...allies[allyIndex], statuses }
-            currentState = { ...currentState, allies }
-          }
-        }
-      }
-      break
-    }
-
-    case 'buff_attack': {
-      if (card.targetType === 'all_allies') {
-        const allies = currentState.allies.map((a) => ({
-          ...a,
-          currentAttack: a.currentAttack + effect.value,
-        }))
-        currentState = { ...currentState, allies }
-      } else if (card.targetType === 'single_ally' && targetId) {
-        const allyIndex = currentState.allies.findIndex((a) => a.instanceId === targetId)
-        if (allyIndex !== -1) {
-          const allies = [...currentState.allies]
-          allies[allyIndex] = {
-            ...allies[allyIndex],
-            currentAttack: allies[allyIndex].currentAttack + effect.value,
-          }
-          currentState = { ...currentState, allies }
-        }
-      }
-      break
-    }
-
-    case 'buff_health': {
-      if (card.targetType === 'single_ally' && targetId) {
-        const allyIndex = currentState.allies.findIndex((a) => a.instanceId === targetId)
-        if (allyIndex !== -1) {
-          const allies = [...currentState.allies]
-          allies[allyIndex] = {
-            ...allies[allyIndex],
-            currentHp: allies[allyIndex].currentHp + effect.value,
-          }
-          currentState = { ...currentState, allies }
-        }
-      }
-      break
-    }
-
-    default:
-      break
-  }
-
-  // Move spell to discard
-  currentState = {
-    ...currentState,
-    discardPile: [...currentState.discardPile, card],
-  }
-
-  // Resolve Echo
-  if (card.keywords.includes('echo')) {
-    currentState = resolveEcho(currentState, card)
-  }
-
-  return currentState
-}
-
-function playGearCard(state: CombatState, card: GearCard): CombatState {
-  const equippedGear = [...state.player.equippedGear]
-  const gearInventory = state.player.gearInventory.filter((g) => g.id !== card.id)
-
-  if (equippedGear.length < 4) {
-    equippedGear.push(card)
-  }
-  // If at 4, would need UI to select replacement — for now skip
-
-  return {
-    ...state,
-    player: { ...state.player, equippedGear, gearInventory },
-  }
-}
-
-export function useHeroPower(
-  state: CombatState,
-  targetId?: string,
-  heroDefinition?: { heroPower: { cost: number; effect: { type: string; value: number } } },
-  rng?: SeededRNG,
-): CombatState {
-  if (state.player.heroPowerUsedThisTurn) return state
-  if (!heroDefinition) return state
-
-  const cost = heroDefinition.heroPower.cost
-  if (state.player.mana < cost) return state
-
-  let currentState: CombatState = {
-    ...state,
-    player: {
-      ...state.player,
-      mana: state.player.mana - cost,
-      heroPowerUsedThisTurn: true,
-    },
-  }
-
-  const effect = heroDefinition.heroPower.effect
-
-  switch (effect.type) {
-    case 'damage': {
-      if (targetId) {
-        const { state: newState } = dealDamageToEnemy(
-          currentState,
-          targetId,
-          effect.value,
-          'Hero Power',
-        )
-        currentState = newState
-      }
-      break
-    }
-    case 'draw': {
-      if (rng) {
-        currentState = drawCardsWithRng(currentState, effect.value, rng)
-      }
-      break
-    }
-    case 'buff_health': {
-      if (targetId) {
-        const allyIndex = currentState.allies.findIndex((a) => a.instanceId === targetId)
-        if (allyIndex !== -1) {
-          const allies = [...currentState.allies]
-          allies[allyIndex] = {
-            ...allies[allyIndex],
-            currentHp: allies[allyIndex].currentHp + effect.value,
-            statuses: [...allies[allyIndex].statuses, { type: 'ward', stacks: 1 }],
-          }
-          currentState = { ...currentState, allies }
-        }
-      }
-      break
-    }
-    default:
-      break
-  }
-
-  // Check for enemy deaths
-  const { state: afterDeath } = removeDeadEnemies(currentState)
-  currentState = afterDeath
-
-  if (currentState.enemies.length === 0) {
-    return { ...currentState, result: 'victory', phase: 'combat_over' }
-  }
-
-  return currentState
-}
-
-export function endPlayerTurn(state: CombatState, rng?: SeededRNG): CombatState {
-  if (state.phase !== 'player_action') return state
-
-  let currentState = state
-
-  // Resolve ally attacks
-  for (const ally of currentState.allies) {
-    if (ally.currentHp <= 0 || ally.hasAttackedThisTurn) continue
-    if (currentState.enemies.length === 0) break
-
-    // Auto-target: attack leftmost enemy
-    const target = currentState.enemies[0]
-    if (!target || target.hp <= 0) continue
-
-    const { state: afterDamage } = dealDamageToEnemy(
-      currentState,
-      target.instanceId,
-      ally.currentAttack,
-      ally.card.name,
-    )
-    currentState = afterDamage
-
-    // Resolve Strike
-    currentState = resolveStrike(currentState, ally, target.instanceId, rng)
-
-    // Mark as attacked
-    const allyIndex = currentState.allies.findIndex((a) => a.instanceId === ally.instanceId)
-    if (allyIndex !== -1) {
-      const allies = [...currentState.allies]
-      allies[allyIndex] = { ...allies[allyIndex], hasAttackedThisTurn: true }
-      currentState = { ...currentState, allies }
-    }
-
-    // Remove dead enemies after each attack
-    const { state: afterRemove } = removeDeadEnemies(currentState)
-    currentState = afterRemove
-  }
-
-  // Remove dead allies and resolve deathblows
-  const { state: afterAllyDeath, deadAllies } = removeDeadAllies(currentState)
-  currentState = afterAllyDeath
-  for (const deadAlly of deadAllies) {
-    currentState = resolveDeathblow(currentState, deadAlly, rng)
-  }
-
-  // Check victory after ally attacks
-  if (currentState.enemies.length === 0) {
-    return { ...currentState, result: 'victory', phase: 'combat_over' }
-  }
-
-  // Apply gear end-of-turn effects
-  currentState = applyGearEndOfTurn(currentState)
-
-  // Orin's passive: heal lowest HP ally for 2
-  if (currentState.player.heroId === 'hero_orin' && currentState.allies.length > 0) {
-    const lowestAlly = [...currentState.allies].sort(
-      (a, b) => a.currentHp - b.currentHp,
-    )[0]
-    if (lowestAlly) {
-      currentState = healAlly(currentState, lowestAlly.instanceId, 2)
-    }
-  }
-
-  // Discard remaining hand
-  currentState = discardHand(currentState)
-
-  return { ...currentState, phase: 'enemy_phase' }
-}
-
-export function endPlayerTurnWithTargets(
-  state: CombatState,
-  allyTargets: Record<string, string>,
-  rng?: SeededRNG,
-): CombatState {
-  if (state.phase !== 'player_action') return state
-
-  let currentState = state
-
-  // Resolve ally attacks with player-chosen targets
-  for (const ally of currentState.allies) {
-    if (ally.currentHp <= 0 || ally.hasAttackedThisTurn) continue
-    if (currentState.enemies.length === 0) break
-
-    // Use player-chosen target, fallback to leftmost enemy
-    const targetId = allyTargets[ally.instanceId] ?? currentState.enemies[0]?.instanceId
-    const target = currentState.enemies.find((e) => e.instanceId === targetId && e.hp > 0)
-    if (!target) {
-      // Fallback to first alive enemy
-      const fallback = currentState.enemies.find((e) => e.hp > 0)
-      if (!fallback) break
-      const { state: afterDamage } = dealDamageToEnemy(currentState, fallback.instanceId, ally.currentAttack, ally.card.name)
-      currentState = afterDamage
-      currentState = resolveStrike(currentState, ally, fallback.instanceId, rng)
-    } else {
-      const { state: afterDamage } = dealDamageToEnemy(currentState, target.instanceId, ally.currentAttack, ally.card.name)
-      currentState = afterDamage
-      currentState = resolveStrike(currentState, ally, target.instanceId, rng)
-    }
-
-    // Mark as attacked
-    const allyIndex = currentState.allies.findIndex((a) => a.instanceId === ally.instanceId)
-    if (allyIndex !== -1) {
-      const allies = [...currentState.allies]
-      allies[allyIndex] = { ...allies[allyIndex], hasAttackedThisTurn: true }
-      currentState = { ...currentState, allies }
-    }
-
-    const { state: afterRemove } = removeDeadEnemies(currentState)
-    currentState = afterRemove
-  }
-
-  // Remove dead allies and resolve deathblows
-  const { state: afterAllyDeath, deadAllies } = removeDeadAllies(currentState)
-  currentState = afterAllyDeath
-  for (const deadAlly of deadAllies) {
-    currentState = resolveDeathblow(currentState, deadAlly, rng)
-  }
-
-  if (currentState.enemies.length === 0) {
-    return { ...currentState, result: 'victory', phase: 'combat_over' }
-  }
-
-  currentState = applyGearEndOfTurn(currentState)
-
-  // Orin's passive
-  if (currentState.player.heroId === 'hero_orin' && currentState.allies.length > 0) {
-    const lowestAlly = [...currentState.allies].sort((a, b) => a.currentHp - b.currentHp)[0]
-    if (lowestAlly) {
-      currentState = healAlly(currentState, lowestAlly.instanceId, 2)
-    }
-  }
-
-  currentState = discardHand(currentState)
-  return { ...currentState, phase: 'enemy_phase' }
-}
-
-export function executeEnemyPhase(state: CombatState, rng?: SeededRNG): CombatState {
-  if (state.phase !== 'enemy_phase') return state
-
-  let currentState = state
-
-  // Each enemy executes intent left to right
-  for (const enemy of [...currentState.enemies]) {
-    if (enemy.hp <= 0) continue
-
-    // Get fresh reference in case state changed
-    const currentEnemy = currentState.enemies.find((e) => e.instanceId === enemy.instanceId)
-    if (!currentEnemy || currentEnemy.hp <= 0) continue
-
-    currentState = executeEnemyIntent(currentState, currentEnemy)
-
-    // Check hero death
-    if (currentState.result === 'defeat') {
-      return { ...currentState, phase: 'combat_over' }
-    }
-
-    // Remove dead allies and resolve deathblows
-    const { state: afterAllyDeath, deadAllies } = removeDeadAllies(currentState)
-    currentState = afterAllyDeath
-    for (const deadAlly of deadAllies) {
-      currentState = resolveDeathblow(currentState, deadAlly, rng)
-    }
-
-    // Advance enemy intent
-    const enemyIndex = currentState.enemies.findIndex(
-      (e) => e.instanceId === currentEnemy.instanceId,
-    )
-    if (enemyIndex !== -1) {
-      const enemies = [...currentState.enemies]
-      enemies[enemyIndex] = advanceEnemyIntent(enemies[enemyIndex])
-      currentState = { ...currentState, enemies }
-    }
-  }
-
-  return { ...currentState, phase: 'turn_end' }
 }
 
 export interface CombatStats {
@@ -739,7 +205,6 @@ export function extractCombatStats(state: CombatState, initialEnemyCount: number
     }
   }
 
-  // Enemies killed = initial count minus surviving enemies
   const survivingEnemies = state.enemies.filter((e) => e.hp > 0).length
   const enemiesKilled = initialEnemyCount - survivingEnemies
 

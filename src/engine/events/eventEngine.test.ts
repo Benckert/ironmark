@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { selectEvent, resolveChoice } from './eventEngine.ts'
 import { SeededRNG } from '../../utils/random.ts'
-import { getAllEvents } from '@data/dataLoader.ts'
+import { getAllEvents, getEventsByStage } from '@data/dataLoader.ts'
 
 describe('eventEngine', () => {
   describe('selectEvent', () => {
@@ -15,19 +15,19 @@ describe('eventEngine', () => {
     })
 
     it('avoids visited events when possible', () => {
-      const allEvents = getAllEvents()
-      const visitedIds = allEvents.slice(0, allEvents.length - 1).map((e) => e.id)
+      const stageEvents = getEventsByStage(1)
+      const visitedIds = stageEvents.slice(0, stageEvents.length - 1).map((e) => e.id)
       const rng = new SeededRNG('avoid-visited')
-      const event = selectEvent(rng, visitedIds)
+      const event = selectEvent(rng, visitedIds, 1)
       // Should pick the one unvisited event
-      expect(event.id).toBe(allEvents[allEvents.length - 1].id)
+      expect(event.id).toBe(stageEvents[stageEvents.length - 1].id)
     })
 
     it('falls back to visited events when all visited', () => {
-      const allEvents = getAllEvents()
-      const visitedIds = allEvents.map((e) => e.id)
+      const stageEvents = getEventsByStage(1)
+      const visitedIds = stageEvents.map((e) => e.id)
       const rng = new SeededRNG('all-visited')
-      const event = selectEvent(rng, visitedIds)
+      const event = selectEvent(rng, visitedIds, 1)
       expect(event).toBeDefined()
     })
   })

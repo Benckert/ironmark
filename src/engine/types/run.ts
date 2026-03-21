@@ -14,6 +14,7 @@ export type RunPhase =
   | 'rest'
   | 'event'
   | 'boss'
+  | 'stage_transition'
   | 'victory'
   | 'defeat'
   | 'main_menu'
@@ -32,6 +33,7 @@ export interface RunStats {
 export interface RunState {
   seed: string
   phase: RunPhase
+  stage: number
   hero: HeroDefinition | null
   hp: number
   maxHp: number

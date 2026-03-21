@@ -1,0 +1,297 @@
+[
+  {
+    "id": "event_s2_corrupted_well",
+    "name": "The Corrupted Well",
+    "narrative": "A stone well stands at the center of a blighted clearing. The water below glows a sickly green, and the chain descending into it is coated in crystallized corruption. Yet you can feel raw power radiating from the depths.",
+    "choices": [
+      {
+        "label": "Drink the water",
+        "description": "Consume the corrupted water. Power always has a price.",
+        "outcome": {
+          "description": "The water scorches your insides, but arcane energy floods your veins. You feel stronger — and tainted.",
+          "effects": [
+            { "type": "max_hp", "value": 8 },
+            { "type": "add_curse" }
+          ]
+        }
+      },
+      {
+        "label": "Purify with blood",
+        "description": "Cut your palm and let your blood cleanse the well. Sacrifice 10 HP.",
+        "outcome": {
+          "description": "Your blood hisses as it hits the water. The green glow fades, and a gleaming card rises to the surface.",
+          "effects": [
+            { "type": "damage", "value": 10 },
+            { "type": "add_card", "cardRarity": "rare" }
+          ]
+        }
+      },
+      {
+        "label": "Seal the well",
+        "description": "Collapse the stones inward. Remove the temptation entirely.",
+        "outcome": {
+          "description": "The well crumbles. Among the rubble, you find coins left as offerings long ago.",
+          "effects": [{ "type": "gold", "value": 35 }]
+        }
+      }
+    ],
+    "artId": "art_corrupted_well"
+  },
+  {
+    "id": "event_s2_lich_library",
+    "name": "The Lich's Library",
+    "narrative": "Shelves of blackened bone stretch to the ceiling, each lined with books bound in skin and sinew. A spectral librarian drifts between the aisles, cataloguing texts with skeletal fingers. It notices you and tilts its skull. \"A reader, or a thief?\"",
+    "choices": [
+      {
+        "label": "Request knowledge",
+        "description": "Ask the librarian to share a tome of power. It demands payment.",
+        "outcome": {
+          "description": "The librarian hands you a crackling grimoire. Your gold pouch feels considerably lighter.",
+          "effects": [
+            { "type": "gold", "value": -40 },
+            { "type": "add_card", "cardRarity": "rare" }
+          ]
+        }
+      },
+      {
+        "label": "Steal a book",
+        "description": "Grab the nearest tome and run. The librarian will not forgive this.",
+        "outcome": {
+          "description": "You snatch a book and bolt. Behind you, the librarian shrieks — and something gives chase.",
+          "effects": [
+            { "type": "add_card", "cardRarity": "uncommon" },
+            { "type": "extra_enemy" }
+          ]
+        }
+      },
+      {
+        "label": "Burn the library",
+        "description": "This knowledge is too dangerous to exist. Set it ablaze.",
+        "outcome": {
+          "description": "The flames consume centuries of forbidden lore. In the ashes, you find melted gold and feel a burden lift from the air.",
+          "effects": [
+            { "type": "gold", "value": 25 },
+            { "type": "remove_card" }
+          ]
+        }
+      }
+    ],
+    "artId": "art_lich_library"
+  },
+  {
+    "id": "event_s2_blood_fountain",
+    "name": "The Blood Fountain",
+    "narrative": "A marble fountain stands pristine amid the decay, its basin filled with liquid crimson. The blood flows upward in defiance of nature, forming intricate patterns in the air before splashing back down. The scent is intoxicating.",
+    "choices": [
+      {
+        "label": "Bathe in it",
+        "description": "Submerge yourself in the blood fountain. Gain tremendous healing.",
+        "outcome": {
+          "description": "The blood clings to your skin and seeps into your wounds. You feel whole again — unnervingly so.",
+          "effects": [{ "type": "heal", "value": 20 }]
+        }
+      },
+      {
+        "label": "Bottle and sell",
+        "description": "Collect the blood in vials. Alchemists pay handsomely for reagents like this.",
+        "outcome": {
+          "description": "You fill every container you have. This will fetch a fortune.",
+          "effects": [{ "type": "gold", "value": 50 }]
+        }
+      },
+      {
+        "label": "Offer your own blood",
+        "description": "Add your blood to the fountain. Sacrifice 8 HP for a powerful reward.",
+        "outcome": {
+          "description": "The fountain drinks your offering and reciprocates with a gift forged in crimson light.",
+          "effects": [
+            { "type": "damage", "value": 8 },
+            { "type": "add_gear", "cardRarity": "rare" }
+          ]
+        }
+      }
+    ],
+    "artId": "art_blood_fountain"
+  },
+  {
+    "id": "event_s2_trapped_demon",
+    "name": "The Trapped Demon",
+    "narrative": "A binding circle etched into the floor contains a creature of smoke and ember. It writhes against invisible chains, its eyes like molten iron. \"Free me,\" it hisses, \"and I shall grant you a boon. Or leave me, and take what the fools who trapped me left behind.\"",
+    "choices": [
+      {
+        "label": "Free the demon",
+        "description": "Break the circle. Claim the demon's boon — and its consequences.",
+        "outcome": {
+          "description": "The demon erupts free with a roar. True to its word, power courses into you. But something dark now follows in your shadow.",
+          "effects": [
+            { "type": "add_card", "cardRarity": "rare" },
+            { "type": "add_curse" },
+            { "type": "add_curse" }
+          ]
+        }
+      },
+      {
+        "label": "Loot the summoners",
+        "description": "Search the remains of those who bound the demon.",
+        "outcome": {
+          "description": "The summoners' corpses yield enchanted gear and a modest coin purse.",
+          "effects": [
+            { "type": "add_gear", "cardRarity": "uncommon" },
+            { "type": "gold", "value": 20 }
+          ]
+        }
+      }
+    ],
+    "artId": "art_trapped_demon"
+  },
+  {
+    "id": "event_s2_crystal_cave",
+    "name": "The Crystal Cavern",
+    "narrative": "The tunnel opens into a cavern studded with enormous crystals that pulse with inner light. Each one hums at a different pitch, and where their frequencies overlap, the air shimmers with arcane resonance. Mining them would be profitable — but the resonance might serve a greater purpose.",
+    "choices": [
+      {
+        "label": "Mine the crystals",
+        "description": "Shatter the crystals for their raw value. Gain a large sum of gold.",
+        "outcome": {
+          "description": "Crystal shards rain down as you work. Each one is worth a small fortune.",
+          "effects": [{ "type": "gold", "value": 60 }]
+        }
+      },
+      {
+        "label": "Attune to the resonance",
+        "description": "Meditate among the crystals. The harmonics may permanently strengthen you.",
+        "outcome": {
+          "description": "The frequencies align with your heartbeat. You emerge with a body hardened by crystalline energy.",
+          "effects": [{ "type": "max_hp", "value": 10 }]
+        }
+      },
+      {
+        "label": "Weaponize a shard",
+        "description": "Fashion a crystal into a weapon. It will be powerful but unstable.",
+        "outcome": {
+          "description": "The shard hums dangerously in your grip. Its edge cuts through anything — including your own skin.",
+          "effects": [
+            { "type": "add_gear", "cardRarity": "rare" },
+            { "type": "damage", "value": 6 }
+          ]
+        }
+      }
+    ],
+    "artId": "art_crystal_cave"
+  },
+  {
+    "id": "event_s2_war_camp",
+    "name": "The Ravaged War Camp",
+    "narrative": "A forward camp lies in ruins, tents shredded and supply crates splintered. Whatever attacked left in a hurry — bodies and supplies remain. A wounded scout clutches a map, whispering coordinates before losing consciousness.",
+    "choices": [
+      {
+        "label": "Take the map",
+        "description": "Study the scout's map to reveal the dungeon layout ahead.",
+        "outcome": {
+          "description": "The map is stained with blood but legible. You now know what lies ahead.",
+          "effects": [{ "type": "reveal_map" }]
+        }
+      },
+      {
+        "label": "Scavenge supplies",
+        "description": "Search the camp for anything useful. Gold, gear, provisions.",
+        "outcome": {
+          "description": "Among the wreckage you find a serviceable weapon and scattered coin.",
+          "effects": [
+            { "type": "add_gear", "cardRarity": "uncommon" },
+            { "type": "gold", "value": 15 }
+          ]
+        }
+      },
+      {
+        "label": "Tend the wounded",
+        "description": "Spend time treating survivors. They share combat techniques in gratitude.",
+        "outcome": {
+          "description": "The survivors teach you a brutal technique honed in desperate battle.",
+          "effects": [
+            { "type": "heal", "value": -5 },
+            { "type": "add_card", "cardRarity": "uncommon" }
+          ]
+        }
+      }
+    ],
+    "artId": "art_war_camp"
+  },
+  {
+    "id": "event_s2_mirror_hall",
+    "name": "The Hall of Mirrors",
+    "narrative": "Dozens of mirrors line both walls of a long corridor, each reflecting a slightly different version of you. In one, you are stronger. In another, wealthier. In a third, you wield a weapon you do not own. One mirror shows nothing at all — just darkness.",
+    "choices": [
+      {
+        "label": "Step into the strong reflection",
+        "description": "Merge with a version of yourself that never stopped fighting.",
+        "outcome": {
+          "description": "Your reflection reaches out and pulls you through. You return with its strength, but your purse is lighter.",
+          "effects": [
+            { "type": "max_hp", "value": 7 },
+            { "type": "gold", "value": -20 }
+          ]
+        }
+      },
+      {
+        "label": "Step into the dark mirror",
+        "description": "Enter the void reflection. Unknown risk, unknown reward.",
+        "outcome": {
+          "description": "The darkness swallows you and spits you out somewhere else entirely. You bypass the dangers ahead — but something clings to you.",
+          "effects": [
+            { "type": "skip_node" },
+            { "type": "add_curse" }
+          ]
+        }
+      },
+      {
+        "label": "Smash all mirrors",
+        "description": "Shatter every reflection. Collect the enchanted glass.",
+        "outcome": {
+          "description": "Silvered shards cascade to the floor. Each fragment holds a sliver of magic — and value.",
+          "effects": [{ "type": "gold", "value": 45 }]
+        }
+      }
+    ],
+    "artId": "art_mirror_hall"
+  },
+  {
+    "id": "event_s2_dying_treant",
+    "name": "The Dying Treant",
+    "narrative": "A massive tree creature kneels in a clearing of scorched earth, its bark cracked and oozing sap like blood. Corruption spreads across its trunk in black veins. It extends a gnarled hand holding a single luminous seed. \"Plant me... or end me. Either is mercy.\"",
+    "choices": [
+      {
+        "label": "Plant the seed",
+        "description": "Take the seed and promise to carry its legacy. The treant gifts you its remaining strength.",
+        "outcome": {
+          "description": "The treant crumbles to rich soil as the seed pulses warmly in your hand. Its blessing fortifies you.",
+          "effects": [
+            { "type": "heal", "value": 15 },
+            { "type": "max_hp", "value": 5 }
+          ]
+        }
+      },
+      {
+        "label": "End its suffering",
+        "description": "Strike the treant down and harvest its heartwood.",
+        "outcome": {
+          "description": "The ancient wood yields powerful materials. You fashion them into something formidable.",
+          "effects": [{ "type": "add_gear", "cardRarity": "rare" }]
+        }
+      },
+      {
+        "label": "Absorb the corruption",
+        "description": "Draw the corruption from the treant into yourself. Gain its dark power.",
+        "outcome": {
+          "description": "Black veins crawl up your arm as the treant sighs in relief. The corruption is potent — and hungry.",
+          "effects": [
+            { "type": "add_card", "cardRarity": "rare" },
+            { "type": "damage", "value": 8 },
+            { "type": "add_curse" }
+          ]
+        }
+      }
+    ],
+    "artId": "art_dying_treant"
+  }
+]

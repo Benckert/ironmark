@@ -54,9 +54,9 @@ export default function MapScreen({
   const hpColor = hpPercent > 50 ? 'bg-green-600' : hpPercent > 25 ? 'bg-yellow-600' : 'bg-red-600'
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex">
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex flex-col md:flex-row" role="main" aria-label="Map screen">
       {/* Map area */}
-      <div className="flex-1 relative overflow-hidden">
+      <div className="flex-1 relative overflow-auto min-h-[60vh] md:min-h-0" role="navigation" aria-label="Map nodes">
         {/* Background decoration */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-amber-900/5 via-transparent to-transparent" />
 
@@ -104,22 +104,31 @@ export default function MapScreen({
           return (
             <div
               key={node.id}
+              role={isAccessible ? 'button' : undefined}
+              tabIndex={isAccessible ? 0 : undefined}
+              aria-label={`${node.type} node, row ${node.row}${isCurrent ? ', current location' : ''}${isVisited ? ', visited' : ''}${isAccessible ? ', available' : ''}`}
               onClick={isAccessible ? () => onSelectNode(node) : undefined}
+              onKeyDown={isAccessible ? (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault()
+                  onSelectNode(node)
+                }
+              } : undefined}
               className={`
                 absolute transform -translate-x-1/2 -translate-y-1/2
-                w-12 h-12 rounded-full border-2 flex items-center justify-center
+                w-10 h-10 md:w-12 md:h-12 rounded-full border-2 flex items-center justify-center
                 shadow-lg
                 ${nodeColors[node.type]} ${nodeBorders[node.type]}
                 ${isAccessible ? 'cursor-pointer ring-2 ring-amber-400/75 animate-pulse hover:ring-amber-300 hover:scale-125 shadow-amber-500/30' : ''}
                 ${isCurrent ? 'ring-2 ring-white scale-110 shadow-white/20' : ''}
                 ${isVisited && !isCurrent ? 'opacity-35 scale-90' : ''}
                 ${!isVisited && !isAccessible ? 'opacity-50' : ''}
-                transition-all duration-200 z-10
+                transition-all duration-200 z-10 focus:outline-2 focus:outline-amber-400 focus:outline-offset-2
               `}
               style={{ left: `${node.x}%`, top: `${node.y}%` }}
               title={`${node.type} (Row ${node.row})`}
             >
-              <span className={`${node.type === 'boss' ? 'text-xl' : 'text-lg'}`}>
+              <span className={`${node.type === 'boss' ? 'text-lg md:text-xl' : 'text-base md:text-lg'}`}>
                 {nodeIcons[node.type]}
               </span>
             </div>
@@ -128,7 +137,7 @@ export default function MapScreen({
       </div>
 
       {/* Sidebar */}
-      <div className="w-52 bg-slate-800/90 border-l border-slate-700/50 p-5 flex flex-col gap-5 backdrop-blur-sm">
+      <div className="w-full md:w-52 bg-slate-800/90 border-t md:border-t-0 md:border-l border-slate-700/50 p-4 md:p-5 flex flex-row md:flex-col gap-4 md:gap-5 backdrop-blur-sm overflow-x-auto">
         <h2 className="text-xl font-bold text-amber-400 tracking-wide">IRONMARK</h2>
 
         <div className="space-y-3">
