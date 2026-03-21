@@ -50,11 +50,16 @@ export default function MapScreen({
 }: MapScreenProps) {
   const accessibleNodes = getAccessibleNodes(map)
   const accessibleIds = new Set(accessibleNodes.map((n) => n.id))
+  const hpPercent = (playerHp / playerMaxHp) * 100
+  const hpColor = hpPercent > 50 ? 'bg-green-600' : hpPercent > 25 ? 'bg-yellow-600' : 'bg-red-600'
 
   return (
-    <div className="min-h-screen bg-slate-900 flex">
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex">
       {/* Map area */}
       <div className="flex-1 relative overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-amber-900/5 via-transparent to-transparent" />
+
         <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
           {/* Edges */}
           {map.edges.map((edge, i) => {
@@ -80,10 +85,11 @@ export default function MapScreen({
                     ? '#fbbf24'
                     : isVisited
                       ? '#475569'
-                      : '#334155'
+                      : '#1e293b'
                 }
-                strokeWidth={isAccessiblePath ? 3 : 2}
-                strokeDasharray={isAccessiblePath ? '' : isVisited ? '' : '5,5'}
+                strokeWidth={isAccessiblePath ? 3 : 1.5}
+                strokeDasharray={isAccessiblePath ? '' : isVisited ? '' : '4,6'}
+                strokeOpacity={isAccessiblePath ? 1 : isVisited ? 0.6 : 0.3}
               />
             )
           })}
@@ -102,51 +108,64 @@ export default function MapScreen({
               className={`
                 absolute transform -translate-x-1/2 -translate-y-1/2
                 w-12 h-12 rounded-full border-2 flex items-center justify-center
+                shadow-lg
                 ${nodeColors[node.type]} ${nodeBorders[node.type]}
-                ${isAccessible ? 'cursor-pointer ring-2 ring-amber-400 ring-opacity-75 animate-pulse hover:ring-opacity-100 hover:scale-110' : ''}
-                ${isCurrent ? 'ring-2 ring-white scale-110' : ''}
-                ${isVisited && !isCurrent ? 'opacity-40' : ''}
-                ${!isVisited && !isAccessible ? 'opacity-60' : ''}
+                ${isAccessible ? 'cursor-pointer ring-2 ring-amber-400/75 animate-pulse hover:ring-amber-300 hover:scale-125 shadow-amber-500/30' : ''}
+                ${isCurrent ? 'ring-2 ring-white scale-110 shadow-white/20' : ''}
+                ${isVisited && !isCurrent ? 'opacity-35 scale-90' : ''}
+                ${!isVisited && !isAccessible ? 'opacity-50' : ''}
                 transition-all duration-200 z-10
               `}
               style={{ left: `${node.x}%`, top: `${node.y}%` }}
               title={`${node.type} (Row ${node.row})`}
             >
-              <span className="text-lg">{nodeIcons[node.type]}</span>
+              <span className={`${node.type === 'boss' ? 'text-xl' : 'text-lg'}`}>
+                {nodeIcons[node.type]}
+              </span>
             </div>
           )
         })}
       </div>
 
       {/* Sidebar */}
-      <div className="w-48 bg-slate-800 border-l border-slate-700 p-4 flex flex-col gap-4">
-        <h2 className="text-lg font-bold text-amber-400">IRONMARK</h2>
+      <div className="w-52 bg-slate-800/90 border-l border-slate-700/50 p-5 flex flex-col gap-5 backdrop-blur-sm">
+        <h2 className="text-xl font-bold text-amber-400 tracking-wide">IRONMARK</h2>
 
-        <div className="space-y-2">
-          <div className="text-sm text-slate-300">
-            <span className="text-slate-500">HP:</span> {playerHp}/{playerMaxHp}
+        <div className="space-y-3">
+          {/* HP */}
+          <div>
+            <div className="flex justify-between text-sm mb-1">
+              <span className="text-slate-400">HP</span>
+              <span className="text-slate-200 font-medium">{playerHp}/{playerMaxHp}</span>
+            </div>
+            <div className="w-full h-2.5 bg-slate-700 rounded-full overflow-hidden">
+              <div
+                className={`h-full ${hpColor} transition-all duration-500`}
+                style={{ width: `${hpPercent}%` }}
+              />
+            </div>
           </div>
-          <div className="w-full h-2 bg-slate-700 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-green-600 transition-all"
-              style={{ width: `${(playerHp / playerMaxHp) * 100}%` }}
-            />
+
+          {/* Gold */}
+          <div className="flex justify-between text-sm">
+            <span className="text-slate-400">Gold</span>
+            <span className="text-amber-400 font-medium">{gold}</span>
           </div>
-          <div className="text-sm text-slate-300">
-            <span className="text-slate-500">Gold:</span> {gold}
-          </div>
-          <div className="text-sm text-slate-300">
-            <span className="text-slate-500">Deck:</span> {deckSize} cards
+
+          {/* Deck */}
+          <div className="flex justify-between text-sm">
+            <span className="text-slate-400">Deck</span>
+            <span className="text-slate-200 font-medium">{deckSize} cards</span>
           </div>
         </div>
 
-        <div className="border-t border-slate-700 pt-3">
-          <h3 className="text-xs font-semibold text-slate-500 mb-2 uppercase">Legend</h3>
-          <div className="space-y-1 text-xs">
+        <div className="border-t border-slate-700/50 pt-4">
+          <h3 className="text-xs font-semibold text-slate-500 mb-3 uppercase tracking-wider">Legend</h3>
+          <div className="space-y-2 text-xs">
             {(['combat', 'elite', 'shop', 'rest', 'event', 'boss'] as NodeType[]).map((type) => (
-              <div key={type} className="flex items-center gap-2 text-slate-400">
-                <span>{nodeIcons[type]}</span>
-                <span className="capitalize">{type}</span>
+              <div key={type} className="flex items-center gap-2.5">
+                <span className="w-5 text-center">{nodeIcons[type]}</span>
+                <span className="text-slate-400 capitalize">{type}</span>
               </div>
             ))}
           </div>
