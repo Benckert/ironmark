@@ -45,7 +45,6 @@ export default function CombatScreen({ onCombatEnd }: CombatScreenProps) {
     for (const entry of newEntries) {
       if (entry.value && entry.value > 0) {
         const isHeal = entry.description.includes('heal')
-        // Position near center with some randomness
         const centerX = window.innerWidth / 2 + (Math.random() - 0.5) * 100
         const centerY = isHeal ? window.innerHeight * 0.6 : window.innerHeight * 0.25
         addPopup(entry.value, isHeal ? 'heal' : 'damage', centerX, centerY)
@@ -70,7 +69,7 @@ export default function CombatScreen({ onCombatEnd }: CombatScreenProps) {
     }
   }, [combat?.phase])
 
-  // Handle combat end — sync HP and stats back to run
+  // Handle combat end
   useEffect(() => {
     if (combat && combat.result !== 'ongoing' && !combatEnded) {
       setCombatEnded(true)
@@ -88,8 +87,11 @@ export default function CombatScreen({ onCombatEnd }: CombatScreenProps) {
   const allCards = [...combat.drawPile, ...combat.hand, ...combat.discardPile]
 
   return (
-    <div className="relative flex flex-col h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950" role="main" aria-label="Combat screen">
-      {/* Aria-live region for combat announcements */}
+    <div className="relative flex flex-col h-screen im-bg-combat" role="main" aria-label="Combat screen">
+      {/* Vignette overlay */}
+      <div className="absolute inset-0 im-vignette z-[1]" />
+
+      {/* Aria-live region */}
       <div className="sr-only" aria-live="polite" aria-atomic="true">
         Turn {combat.turn}, {combat.phase.replace('_', ' ')} phase.
         {combat.result !== 'ongoing' ? ` Combat result: ${combat.result}.` : ''}
@@ -98,8 +100,8 @@ export default function CombatScreen({ onCombatEnd }: CombatScreenProps) {
 
       {/* Targeting mode indicator */}
       {targetingMode && (
-        <div className="absolute top-2 left-1/2 -translate-x-1/2 z-40 bg-red-900/80 text-red-200 px-4 py-1 rounded-full text-sm border border-red-700">
-          Select a target — <button onClick={() => selectCard(null)} className="underline" aria-label="Cancel targeting">Cancel</button>
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-40 bg-red-900/90 text-red-200 px-5 py-1.5 rounded-full text-sm border border-red-600/50 im-glow-red backdrop-blur-sm">
+          Select a target — <button onClick={() => selectCard(null)} className="underline font-semibold" aria-label="Cancel targeting">Cancel</button>
         </div>
       )}
 
@@ -108,37 +110,39 @@ export default function CombatScreen({ onCombatEnd }: CombatScreenProps) {
         const attackableAllies = combat.allies.filter((a) => a.currentHp > 0 && !a.hasAttackedThisTurn)
         const currentAlly = attackableAllies[currentAllyTargetIndex]
         return currentAlly ? (
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 z-40 bg-emerald-900/80 text-emerald-200 px-4 py-1 rounded-full text-sm border border-emerald-700">
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-40 bg-emerald-900/90 text-emerald-200 px-5 py-1.5 rounded-full text-sm border border-emerald-600/50 im-glow-green backdrop-blur-sm">
             Choose target for <span className="font-bold">{currentAlly.card.name}</span> ({currentAllyTargetIndex + 1}/{attackableAllies.length})
           </div>
         ) : null
       })()}
 
-      {/* Turn / Phase info */}
-      <div className="flex justify-between items-center px-4 py-2 text-xs text-slate-500">
-        <span>Turn {combat.turn}</span>
-        <span className="capitalize">{combat.phase.replace('_', ' ')}</span>
+      {/* Turn / Phase banner */}
+      <div className="relative z-[2] flex justify-between items-center px-5 py-2">
+        <div className="flex items-center gap-2">
+          <span className="text-amber-400/60 text-xs font-semibold uppercase tracking-wider">Turn</span>
+          <span className="text-amber-300 font-bold text-sm">{combat.turn}</span>
+        </div>
+        <span className="text-xs uppercase tracking-widest text-slate-500 font-medium">
+          {combat.phase.replace('_', ' ')}
+        </span>
       </div>
 
-      {/* Combat board — vertical layout (Hearthstone-style) */}
-      <div className="flex flex-col flex-1 min-h-0">
+      {/* Combat board */}
+      <div className="relative z-[2] flex flex-col flex-1 min-h-0">
         {/* Enemy area (top) */}
-        <div className="flex-1 bg-red-950/10 border-b border-red-900/20 flex flex-col justify-end">
-          <div className="text-[10px] text-red-400/50 uppercase tracking-wider text-center pt-1">Enemies</div>
+        <div className="flex-1 flex flex-col justify-end">
+          <div className="text-[10px] text-red-400/40 uppercase tracking-wider text-center pt-1 font-semibold">Enemies</div>
           <EnemyDisplay />
         </div>
 
         {/* Battle divider */}
-        <div className="relative">
-          <div className="border-t border-slate-600/30" />
-          <div className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-900 px-3 text-[10px] text-slate-600 uppercase tracking-widest">
-            vs
-          </div>
+        <div className="relative mx-8 my-1">
+          <div className="im-divider" />
         </div>
 
-        {/* Ally area + Hero HUD (bottom half) */}
-        <div className="flex-1 bg-emerald-950/10 border-t border-emerald-900/20 flex flex-col justify-start">
-          <div className="text-[10px] text-emerald-400/50 uppercase tracking-wider text-center pt-1">Allies</div>
+        {/* Ally area + Hero HUD */}
+        <div className="flex-1 flex flex-col justify-start">
+          <div className="text-[10px] text-emerald-400/40 uppercase tracking-wider text-center pt-1 font-semibold">Allies</div>
           <AllyBoard />
           <div className="mt-auto px-4 pb-2">
             <HeroHUD />
@@ -147,11 +151,11 @@ export default function CombatScreen({ onCombatEnd }: CombatScreenProps) {
       </div>
 
       {/* Controls */}
-      <div className="flex justify-center gap-3 mb-2">
+      <div className="relative z-[2] flex justify-center gap-3 mb-2">
         <button
           onClick={() => setShowDeck(true)}
           aria-label="View deck"
-          className="px-3 py-1 min-h-11 min-w-11 rounded bg-slate-700 text-slate-300 text-xs hover:bg-slate-600 transition-colors"
+          className="px-4 py-1.5 min-h-11 min-w-11 rounded-lg bg-slate-800/80 text-slate-400 text-xs hover:bg-slate-700/80 hover:text-slate-200 transition-all border border-slate-700/50"
         >
           View Deck
         </button>
@@ -160,10 +164,10 @@ export default function CombatScreen({ onCombatEnd }: CombatScreenProps) {
           aria-label="End turn"
           disabled={combat.phase !== 'player_action' || combat.result !== 'ongoing'}
           className={`
-            px-6 py-2 min-h-11 min-w-11 rounded-lg font-bold text-sm transition-all
+            px-8 py-2 min-h-11 min-w-11 rounded-lg font-bold text-sm transition-all
             ${combat.phase === 'player_action' && combat.result === 'ongoing'
-              ? 'bg-amber-600 text-white hover:bg-amber-500 cursor-pointer'
-              : 'bg-slate-700 text-slate-500 cursor-not-allowed'}
+              ? 'im-btn-primary im-glow-gold cursor-pointer'
+              : 'bg-slate-800/60 text-slate-600 cursor-not-allowed border border-slate-700/30'}
           `}
         >
           End Turn
@@ -171,7 +175,7 @@ export default function CombatScreen({ onCombatEnd }: CombatScreenProps) {
       </div>
 
       {/* Hand */}
-      <div className="flex-shrink-0 bg-slate-900/80 border-t border-slate-700">
+      <div className="relative z-[2] flex-shrink-0 bg-gradient-to-t from-black/40 to-transparent border-t border-white/5">
         <CardHand />
       </div>
 
@@ -180,9 +184,20 @@ export default function CombatScreen({ onCombatEnd }: CombatScreenProps) {
 
       {/* Victory / Defeat overlay */}
       {combat.result !== 'ongoing' && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-50" role="alert">
-          <div className={`text-6xl font-bold ${combat.result === 'victory' ? 'text-amber-400' : 'text-red-500'}`}>
-            {combat.result === 'victory' ? 'VICTORY!' : 'DEFEAT'}
+        <div className="absolute inset-0 flex items-center justify-center bg-black/70 z-50 backdrop-blur-sm" role="alert">
+          <div className="text-center">
+            <div className={`text-7xl font-black tracking-wider ${
+              combat.result === 'victory'
+                ? 'text-amber-400 im-title-glow'
+                : 'text-red-500'
+            }`}
+            style={combat.result === 'defeat' ? { textShadow: '0 0 30px rgba(239, 68, 68, 0.4)' } : undefined}
+            >
+              {combat.result === 'victory' ? 'VICTORY!' : 'DEFEAT'}
+            </div>
+            <div className="text-slate-400 mt-2 text-sm">
+              {combat.result === 'victory' ? 'All enemies vanquished' : 'You have fallen...'}
+            </div>
           </div>
         </div>
       )}

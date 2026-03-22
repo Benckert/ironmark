@@ -32,13 +32,10 @@ export default function CardHand() {
     if (!canPlay(card)) return
 
     if (selectedCardId === card.id) {
-      // Deselect
       selectCard(null)
     } else if (needsTarget(card)) {
-      // Enter targeting mode
       selectCard(card.id)
     } else {
-      // Play immediately (no target needed)
       playCard(card.id)
     }
   }
@@ -46,9 +43,9 @@ export default function CardHand() {
   return (
     <div className="relative" role="group" aria-label={`Your hand, ${hand.length} cards`}>
       {/* Deck / Discard counts */}
-      <div className="absolute -top-6 left-4 flex gap-4 text-xs text-slate-400">
-        <span>Deck: {combat.drawPile.length}</span>
-        <span>Discard: {combat.discardPile.length}</span>
+      <div className="absolute -top-6 left-4 flex gap-4 text-xs">
+        <span className="text-slate-600">Deck: <span className="text-slate-400 font-medium">{combat.drawPile.length}</span></span>
+        <span className="text-slate-600">Discard: <span className="text-slate-400 font-medium">{combat.discardPile.length}</span></span>
       </div>
 
       <div className="flex justify-start md:justify-center items-end gap-1 py-2 min-h-[180px] overflow-x-auto whitespace-nowrap px-4 snap-x snap-mandatory md:snap-none">

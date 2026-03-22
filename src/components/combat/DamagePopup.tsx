@@ -42,17 +42,28 @@ function DamageNumber({ event }: { event: DamageEvent }) {
     requestAnimationFrame(() => setVisible(true))
   }, [])
 
+  const isDamage = event.type === 'damage'
+
   return (
     <div
       className={`
-        absolute pointer-events-none font-bold text-2xl z-50
-        ${event.type === 'damage' ? 'text-red-400' : 'text-green-400'}
-        ${visible ? 'opacity-0 -translate-y-8' : 'opacity-100'}
+        absolute pointer-events-none font-black text-3xl z-50
+        ${isDamage ? 'text-red-400' : 'text-green-400'}
+        ${visible
+          ? isDamage ? 'opacity-0 translate-y-4' : 'opacity-0 -translate-y-8'
+          : 'opacity-100'}
         transition-all duration-700 ease-out
       `}
-      style={{ left: event.x, top: event.y }}
+      style={{
+        left: event.x,
+        top: event.y,
+        textShadow: isDamage
+          ? '0 0 8px rgba(239, 68, 68, 0.6), 2px 2px 0 rgba(0,0,0,0.5)'
+          : '0 0 8px rgba(34, 197, 94, 0.6), 2px 2px 0 rgba(0,0,0,0.5)',
+        WebkitTextStroke: '1px rgba(0,0,0,0.3)',
+      }}
     >
-      {event.type === 'damage' ? '-' : '+'}{event.value}
+      {isDamage ? '-' : '+'}{event.value}
     </div>
   )
 }

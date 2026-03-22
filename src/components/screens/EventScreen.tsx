@@ -24,110 +24,109 @@ export default function EventScreen({
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-8">
-      {/* Event name */}
-      <h1 className="text-2xl font-bold text-amber-400 mb-4">{event.name}</h1>
+    <div className="min-h-screen im-bg-ambient flex flex-col items-center justify-center p-8 relative">
+      <div className="absolute inset-0 im-vignette pointer-events-none" />
 
-      {/* Narrative */}
-      <p className="text-slate-300 max-w-xl text-center mb-8 leading-relaxed">
-        {event.narrative}
-      </p>
+      <div className="relative z-10 max-w-xl w-full">
+        {/* Event name */}
+        <h1 className="text-2xl font-bold text-amber-300 mb-4 text-center tracking-wide">{event.name}</h1>
 
-      {/* Choices */}
-      {!result && (
-        <div className="flex flex-col gap-3 w-full max-w-md">
-          {event.choices.map((choice, i) => (
+        {/* Narrative — scroll-like text area */}
+        <div className="bg-gradient-to-b from-slate-800/60 to-slate-900/40 rounded-lg px-6 py-5 mb-8 border border-amber-900/15 im-card-frame">
+          <p className="text-slate-300 text-center leading-relaxed italic">
+            {event.narrative}
+          </p>
+        </div>
+
+        {/* Choices */}
+        {!result && (
+          <div className="flex flex-col gap-3 w-full">
+            {event.choices.map((choice, i) => (
+              <button
+                key={i}
+                onClick={() => handleChoose(i)}
+                className="p-4 bg-gradient-to-r from-slate-800/60 to-slate-800/40 border border-slate-600/20 rounded-lg hover:border-amber-600/30 hover:from-slate-700/60 transition-all text-left im-card-frame group"
+              >
+                <div className="text-slate-200 font-semibold group-hover:text-amber-200 transition-colors">{choice.label}</div>
+                <div className="text-sm text-slate-500 mt-1">{choice.description}</div>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Outcome */}
+        {result && (
+          <div className="flex flex-col items-center gap-6 w-full">
+            <div className="text-sm text-slate-600">
+              You chose: {event.choices[chosenIndex!].label}
+            </div>
+
+            <div className="p-4 bg-gradient-to-b from-slate-800/60 to-slate-900/40 border border-slate-600/20 rounded-lg w-full text-center im-card-frame">
+              <p className="text-slate-300 italic">{result.outcomeDescription}</p>
+            </div>
+
+            {/* Mechanical effects */}
+            <div className="flex flex-wrap gap-2 justify-center">
+              {result.hpDelta > 0 && (
+                <EffectBadge color="green" text={`+${result.hpDelta} HP`} />
+              )}
+              {result.hpDelta < 0 && (
+                <EffectBadge color="red" text={`${result.hpDelta} HP`} />
+              )}
+              {result.maxHpDelta !== 0 && (
+                <EffectBadge
+                  color={result.maxHpDelta > 0 ? 'green' : 'red'}
+                  text={`${result.maxHpDelta > 0 ? '+' : ''}${result.maxHpDelta} Max HP`}
+                />
+              )}
+              {result.goldDelta !== 0 && (
+                <EffectBadge
+                  color={result.goldDelta > 0 ? 'amber' : 'red'}
+                  text={`${result.goldDelta > 0 ? '+' : ''}${result.goldDelta} Gold`}
+                />
+              )}
+              {result.addedCards.length > 0 && (
+                <EffectBadge color="blue" text={`+${result.addedCards.map((c) => c.name).join(', ')}`} />
+              )}
+              {result.addedGear.length > 0 && (
+                <EffectBadge color="purple" text={`+${result.addedGear.map((g) => g.name).join(', ')}`} />
+              )}
+              {result.addCurse && (
+                <EffectBadge color="red" text="Curse added" />
+              )}
+              {result.revealMap && (
+                <EffectBadge color="blue" text="Map revealed" />
+              )}
+              {result.skipNode && (
+                <EffectBadge color="purple" text="Skipped ahead" />
+              )}
+            </div>
+
             <button
-              key={i}
-              onClick={() => handleChoose(i)}
-              className="p-4 bg-slate-800 border border-slate-600 rounded-lg hover:bg-slate-700 hover:border-slate-500 transition-all text-left"
+              onClick={onContinue}
+              className="px-8 py-3 im-btn-primary rounded-lg text-lg"
             >
-              <div className="text-slate-200 font-semibold">{choice.label}</div>
-              <div className="text-sm text-slate-400 mt-1">{choice.description}</div>
+              Continue
             </button>
-          ))}
-        </div>
-      )}
-
-      {/* Outcome */}
-      {result && (
-        <div className="flex flex-col items-center gap-6 w-full max-w-md">
-          {/* Chosen option */}
-          <div className="text-sm text-slate-500">
-            You chose: {event.choices[chosenIndex!].label}
           </div>
-
-          {/* Outcome description */}
-          <div className="p-4 bg-slate-800 border border-slate-600 rounded-lg w-full text-center">
-            <p className="text-slate-300 italic">{result.outcomeDescription}</p>
-          </div>
-
-          {/* Mechanical effects */}
-          <div className="flex flex-wrap gap-2 justify-center">
-            {result.hpDelta > 0 && (
-              <span className="px-3 py-1 bg-green-900/50 text-green-400 rounded-full text-sm">
-                +{result.hpDelta} HP
-              </span>
-            )}
-            {result.hpDelta < 0 && (
-              <span className="px-3 py-1 bg-red-900/50 text-red-400 rounded-full text-sm">
-                {result.hpDelta} HP
-              </span>
-            )}
-            {result.maxHpDelta !== 0 && (
-              <span className={`px-3 py-1 rounded-full text-sm ${
-                result.maxHpDelta > 0
-                  ? 'bg-green-900/50 text-green-400'
-                  : 'bg-red-900/50 text-red-400'
-              }`}>
-                {result.maxHpDelta > 0 ? '+' : ''}{result.maxHpDelta} Max HP
-              </span>
-            )}
-            {result.goldDelta !== 0 && (
-              <span className={`px-3 py-1 rounded-full text-sm ${
-                result.goldDelta > 0
-                  ? 'bg-amber-900/50 text-amber-400'
-                  : 'bg-red-900/50 text-red-400'
-              }`}>
-                {result.goldDelta > 0 ? '+' : ''}{result.goldDelta} Gold
-              </span>
-            )}
-            {result.addedCards.length > 0 && (
-              <span className="px-3 py-1 bg-blue-900/50 text-blue-400 rounded-full text-sm">
-                +{result.addedCards.map((c) => c.name).join(', ')}
-              </span>
-            )}
-            {result.addedGear.length > 0 && (
-              <span className="px-3 py-1 bg-purple-900/50 text-purple-400 rounded-full text-sm">
-                +{result.addedGear.map((g) => g.name).join(', ')}
-              </span>
-            )}
-            {result.addCurse && (
-              <span className="px-3 py-1 bg-red-900/50 text-red-400 rounded-full text-sm">
-                Curse added
-              </span>
-            )}
-            {result.revealMap && (
-              <span className="px-3 py-1 bg-blue-900/50 text-blue-400 rounded-full text-sm">
-                Map revealed
-              </span>
-            )}
-            {result.skipNode && (
-              <span className="px-3 py-1 bg-purple-900/50 text-purple-400 rounded-full text-sm">
-                Skipped ahead
-              </span>
-            )}
-          </div>
-
-          {/* Continue */}
-          <button
-            onClick={onContinue}
-            className="px-8 py-3 bg-amber-600 text-white font-bold rounded-lg hover:bg-amber-500 transition-colors text-lg"
-          >
-            Continue
-          </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
+  )
+}
+
+const badgeColors: Record<string, string> = {
+  green: 'bg-green-900/40 text-green-400 border-green-700/30',
+  red: 'bg-red-900/40 text-red-400 border-red-700/30',
+  amber: 'bg-amber-900/40 text-amber-400 border-amber-700/30',
+  blue: 'bg-blue-900/40 text-blue-400 border-blue-700/30',
+  purple: 'bg-purple-900/40 text-purple-400 border-purple-700/30',
+}
+
+function EffectBadge({ color, text }: { color: string; text: string }) {
+  return (
+    <span className={`px-3 py-1 rounded-full text-sm border ${badgeColors[color] ?? badgeColors.blue}`}>
+      {text}
+    </span>
   )
 }
