@@ -143,7 +143,7 @@ function generateNodeTypes(rng: SeededRNG, rowCount: number, stage: number): Nod
       let assignedType = type
 
       // Constraints
-      if (row === 0 && (type === 'elite' || type === 'shop')) {
+      if (row === 0 && (type === 'elite' || type === 'shop' || type === 'rest')) {
         assignedType = 'combat'
       }
 

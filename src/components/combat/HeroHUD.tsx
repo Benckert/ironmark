@@ -19,7 +19,7 @@ export default function HeroHUD() {
   return (
     <div className="flex items-center gap-4 bg-slate-800/60 rounded-lg px-4 py-2 border border-slate-700">
       {/* Hero info */}
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col items-center" title={`${heroDefinition.passive.name}: ${heroDefinition.passive.description}`}>
         <div className="text-2xl">{'\uD83E\uDDB8'}</div>
         <div className="text-xs font-bold text-slate-200">{heroDefinition.name}</div>
         <div className="text-[10px] text-slate-400">{heroDefinition.title}</div>
@@ -75,6 +75,7 @@ export default function HeroHUD() {
             }
           }
         }}
+        title={`${heroDefinition.heroPower.name}: ${heroDefinition.heroPower.description} (${heroDefinition.heroPower.cost} mana)`}
         className={`
           px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all
           ${canUseHeroPower

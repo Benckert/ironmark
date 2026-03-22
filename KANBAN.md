@@ -38,6 +38,12 @@
 | FEAT-001 | P2 | Event system — more event variety | Added 5 new events (Ancient Forge, Goblin Gambler, Fallen Hero, Poisoned Spring, Mysterious Statue) |
 | FEAT-002 | P3 | Save/load run state to localStorage | Already implemented via Dexie DB with auto-save on map return and Continue Run button |
 
+| UX-006 | P2 | Uniform walkthrough dialog sizes | Fixed width + min-height on tutorial overlay so buttons don't shift |
+| UX-007 | P2 | Tooltips for hero powers, passives, enemy intents | Added title tooltips to hero power button, hero passive, intent badges |
+| BAL-006 | P1 | No rest node on first map row | Added 'rest' to row-0 constraint in mapGenerator |
+| UI-008 | P1 | Vertical battle board layout (Hearthstone-style) | Enemies top, allies + hero bottom, replaced horizontal layout |
+| AI-001 | P1 | Enemy AI targets allies instead of always hero | 70% chance to attack lowest-HP ally when allies present, 30% hero |
+
 ---
 
 ## In Progress
@@ -51,3 +57,14 @@
 
 | ID | Priority | Task | Notes |
 |----|----------|------|-------|
+
+---
+
+## Nice to Have
+
+> Future ideas to explore once core gameplay is solid.
+
+| ID | Priority | Task | Notes |
+|----|----------|------|-------|
+| NICE-001 | P3 | Speed stat affecting attack order | Add speed variable to allies/enemies that determines turn order in combat |
+| NICE-002 | P3 | Keyboard navigation improvements | Arrow keys, tab order, focus management across all screens |
