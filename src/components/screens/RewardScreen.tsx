@@ -93,132 +93,138 @@ export default function RewardScreen({
   const allDecisionsMade = cardDecisionMade && gearDecisionMade
 
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-8">
-      {/* Gold earned */}
-      <div className="mb-6 text-center">
-        <div className="text-amber-400 text-2xl font-bold">+{goldEarned} Gold</div>
-        <div className="text-slate-500 text-sm">Total: {currentGold} gold</div>
-      </div>
+    <div className="min-h-screen im-bg-ambient flex flex-col items-center justify-center p-8 relative">
+      <div className="absolute inset-0 im-vignette pointer-events-none" />
 
-      {/* Card rewards */}
-      {!cardDecisionMade && (
-        <div className="mb-8">
-          <h2 className="text-xl font-bold text-slate-200 text-center mb-4">Choose a Card</h2>
+      <div className="relative z-10 w-full max-w-3xl">
+        {/* Gold earned */}
+        <div className="mb-6 text-center">
+          <div className="text-amber-400 text-2xl font-bold im-title-glow">+{goldEarned} Gold</div>
+          <div className="text-slate-600 text-sm">Total: {currentGold} gold</div>
+        </div>
 
-          {/* Card fan */}
-          <div className="flex justify-center gap-4 mb-4">
-            {cardChoices.map((card, index) => {
-              const isRevealed = index < revealedCards
-              const isSelected = selectedCard?.id === card.id
+        {/* Card rewards */}
+        {!cardDecisionMade && (
+          <div className="mb-8">
+            <h2 className="text-xl font-bold text-slate-200 text-center mb-4">Choose a Card</h2>
 
-              return (
-                <div
-                  key={`${card.id}_${index}`}
-                  className={`
-                    transition-all duration-500
-                    ${isRevealed ? 'opacity-100 scale-100' : 'opacity-0 scale-75 rotate-y-180'}
-                  `}
+            {/* Card fan */}
+            <div className="flex justify-center gap-5 mb-5">
+              {cardChoices.map((card, index) => {
+                const isRevealed = index < revealedCards
+                const isSelected = selectedCard?.id === card.id
+
+                return (
+                  <div
+                    key={`${card.id}_${index}`}
+                    className={`
+                      transition-all duration-500
+                      ${isRevealed ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}
+                    `}
+                  >
+                    {isRevealed ? (
+                      <div
+                        className={`transform transition-all duration-200 ${
+                          isSelected ? 'scale-110 -translate-y-3' : 'hover:scale-105 hover:-translate-y-1'
+                        }`}
+                      >
+                        <Card
+                          card={card}
+                          size="large"
+                          onClick={() => handleSelectCard(card)}
+                          isPlayable={!isRevealing}
+                          isSelected={isSelected}
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-36 h-52 rounded-lg bg-gradient-to-b from-slate-700 to-slate-800 border border-slate-600/30 flex items-center justify-center im-card-frame">
+                        <span className="text-3xl text-slate-600">?</span>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex justify-center gap-3">
+              {selectedCard && (
+                <button
+                  onClick={handleConfirmCard}
+                  className="px-6 py-2 bg-gradient-to-b from-green-500 to-green-700 text-white font-bold rounded-lg hover:from-green-400 hover:to-green-600 transition-all border border-green-400/30 im-glow-green"
                 >
-                  {isRevealed ? (
-                    <div
-                      className={`transform transition-all duration-200 ${
-                        isSelected ? 'scale-110 -translate-y-2' : 'hover:scale-105'
-                      }`}
-                    >
-                      <Card
-                        card={card}
-                        size="large"
-                        onClick={() => handleSelectCard(card)}
-                        isPlayable={!isRevealing}
-                        isSelected={isSelected}
-                      />
-                    </div>
-                  ) : (
-                    <div className="w-36 h-52 rounded-lg bg-slate-700 border-2 border-slate-600 flex items-center justify-center">
-                      <span className="text-3xl text-slate-500">?</span>
-                    </div>
-                  )}
-                </div>
-              )
-            })}
-          </div>
-
-          {/* Action buttons */}
-          <div className="flex justify-center gap-3">
-            {selectedCard && (
+                  Take {selectedCard.name}
+                </button>
+              )}
               <button
-                onClick={handleConfirmCard}
-                className="px-6 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-500 transition-colors"
+                onClick={handleReroll}
+                disabled={!canAffordReroll || isRevealing}
+                className={`
+                  px-4 py-2 rounded-lg font-semibold text-sm transition-all border
+                  ${canAffordReroll && !isRevealing
+                    ? 'bg-gradient-to-b from-blue-700 to-blue-900 text-white hover:from-blue-600 hover:to-blue-800 border-blue-500/30'
+                    : 'bg-slate-800/60 text-slate-600 cursor-not-allowed border-slate-700/20'}
+                `}
               >
-                Take {selectedCard.name}
+                Reroll ({rerollCost}g)
               </button>
-            )}
+              <button
+                onClick={handleSkipCards}
+                disabled={isRevealing}
+                className="px-4 py-2 bg-slate-800/60 text-slate-400 rounded-lg hover:bg-slate-700/60 transition-all text-sm border border-slate-700/30"
+              >
+                Skip
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Card decision made */}
+        {cardDecisionMade && (
+          <div className="mb-8 text-center text-slate-500">
+            {selectedCard
+              ? <span>Added <span className="text-amber-300 font-semibold">{selectedCard.name}</span> to your deck</span>
+              : <span>Skipped card reward</span>
+            }
+          </div>
+        )}
+
+        {/* Gear reward (elite only) */}
+        {cardDecisionMade && gearChoice && !gearDecisionMade && (
+          <div className="mb-8">
+            <h2 className="text-xl font-bold text-slate-200 text-center mb-4">Gear Reward</h2>
+            <div className="flex justify-center mb-4">
+              <Card card={gearChoice} size="large" isPlayable={false} />
+            </div>
+            <div className="flex justify-center gap-3">
+              <button
+                onClick={handleTakeGear}
+                className="px-6 py-2 bg-gradient-to-b from-green-500 to-green-700 text-white font-bold rounded-lg hover:from-green-400 hover:to-green-600 transition-all border border-green-400/30 im-glow-green"
+              >
+                Take Gear
+              </button>
+              <button
+                onClick={handleSkipGear}
+                className="px-4 py-2 bg-slate-800/60 text-slate-400 rounded-lg hover:bg-slate-700/60 transition-all border border-slate-700/30"
+              >
+                Skip
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Continue button */}
+        {allDecisionsMade && (
+          <div className="flex justify-center">
             <button
-              onClick={handleReroll}
-              disabled={!canAffordReroll || isRevealing}
-              className={`
-                px-4 py-2 rounded-lg font-semibold text-sm transition-colors
-                ${canAffordReroll && !isRevealing
-                  ? 'bg-blue-700 text-white hover:bg-blue-600'
-                  : 'bg-slate-700 text-slate-500 cursor-not-allowed'}
-              `}
+              onClick={onContinue}
+              className="px-8 py-3 im-btn-primary rounded-lg text-lg"
             >
-              Reroll ({rerollCost}g)
-            </button>
-            <button
-              onClick={handleSkipCards}
-              disabled={isRevealing}
-              className="px-4 py-2 bg-slate-700 text-slate-300 rounded-lg hover:bg-slate-600 transition-colors text-sm"
-            >
-              Skip
+              Continue
             </button>
           </div>
-        </div>
-      )}
-
-      {/* Card decision made confirmation */}
-      {cardDecisionMade && (
-        <div className="mb-8 text-center text-slate-400">
-          {selectedCard
-            ? <span>Added <span className="text-slate-200 font-semibold">{selectedCard.name}</span> to your deck</span>
-            : <span>Skipped card reward</span>
-          }
-        </div>
-      )}
-
-      {/* Gear reward (elite only) */}
-      {cardDecisionMade && gearChoice && !gearDecisionMade && (
-        <div className="mb-8">
-          <h2 className="text-xl font-bold text-slate-200 text-center mb-4">Gear Reward</h2>
-          <div className="flex justify-center mb-4">
-            <Card card={gearChoice} size="large" isPlayable={false} />
-          </div>
-          <div className="flex justify-center gap-3">
-            <button
-              onClick={handleTakeGear}
-              className="px-6 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-500 transition-colors"
-            >
-              Take Gear
-            </button>
-            <button
-              onClick={handleSkipGear}
-              className="px-4 py-2 bg-slate-700 text-slate-300 rounded-lg hover:bg-slate-600 transition-colors"
-            >
-              Skip
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Continue button */}
-      {allDecisionsMade && (
-        <button
-          onClick={onContinue}
-          className="px-8 py-3 bg-amber-600 text-white font-bold rounded-lg hover:bg-amber-500 transition-colors text-lg"
-        >
-          Continue
-        </button>
-      )}
+        )}
+      </div>
     </div>
   )
 }
